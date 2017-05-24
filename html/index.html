@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>DIG Dashboard</title>
+	<link rel="shortcut icon" href="/image/favicon.ico">
+	
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+	<style>
+	.navbar-brand {
+    position: absolute;
+    left: 50%;
+    margin-left: -50px !important;
+	text-align: center;
+	display:block;
+    margin: auto;
+	}
+	</style>
+		<script type="text/javascript">
+			window.OfficeBrowserFeedback = window.OfficeBrowserFeedback || {};
+
+			window.OfficeBrowserFeedback.initOptions = {
+				appId: 999, // Replace by your own app id
+				stylesUrl: "/static/feedback/styles/OfficeBrowserFeedback.css",
+				intlUrl: "/static/feedback/intl/",
+				environment: 1, //0 - Prod, 1 - Int
+				primaryColour: "#008272",
+				secondaryColour: "#004B50"
+			};
+	(function (d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) { return; }
+    js = d.createElement(s); js.id = id;
+    js.src = "/static/feedback/scripts/OfficeBrowserFeedback.js";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'officebrowserfeedback-jssdk'));
+</script>
+<script type="text/javascript" language="javascript">
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function getCurrentConsoleUser() {
+    var consoleuser = "";
+	  $.ajax({
+	  type:"GET",
+	  url:"/user",
+	  success: function(data) {
+	  console.log("data:" + data);
+	  consoleuser = data;
+	  },
+	  async: false
+	  })	
+    return consoleuser == null ? "" : consoleuser;
+}
+
+function getCurrentSearchAlias() {
+    var consoleuser = getCurrentConsoleUser();
+	var alias = getParameterByName('alias');
+	if (alias.length<1) {
+		alias=consoleuser;
+	}
+	if (alias.length<1) alias="jhoegger";
+    return alias;
+}
+$(document).ready(function() {
+	var consoleuser = getCurrentConsoleUser();
+	
+	document.getElementById('logging').src = "http://hs-spades-01:419/log2.php?alias=landingpage&consoleuser=" + consoleuser+"&page_url="+encodeURIComponent(window.location.href);
+});
+ 
+</script>
+
+
+  </head>
+  <body>
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a href="/" title="Office Data Science">
+		    <img src="/image/ods-logo.png" style="height:50px" class="img-responsive" alt="user">
+		  </a>
+         </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Settings</a></li>
+            <li><a href="/about">About</a></li>
+			<li><img src="/static/feedback/smile.jpg" style="height:30px; margin-top: 10px;" onclick="OfficeBrowserFeedback.multiFeedback().then(
+			function () { console.log('suceeded'); },
+			function (err) { console.log('failed with error: ' + err); });">:)</a></li>
+          </ul>
+          <form class="navbar-form navbar-right" action="/user/" method="GET">
+            <input type="text" name="alias" class="form-control" placeholder="Search alias...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+  
+	<br><br><br>
+    <div class="container">	
+	  <div class="row">
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Office User Profile</div>
+            <div class="panel-body text-center">
+              <a href="/user/"><img class="img-responsive" src="/image/office-user.jpg"></a>
+			  <br>
+				<p><a class="btn btn-lg btn-primary" href="/user/" role="button">My user profile</a></p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Office Tenant Profile</div>
+            <div class="panel-body text-center">
+              <a href="/static/tenantlist.html"><img class="img-responsive" src="/image/office-tenant.jpg"></a>
+			  <br>
+				<p><a class="btn btn-lg btn-primary" href="/static/tenantlist.html" role="button">Tenant List</a></p>
+            </div>
+          </div>
+        </div>
+		
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Office Tenant Explorer</div>
+            <div class="panel-body text-center">
+              <a href="/static/tenantexplorer.html"><img class="img-responsive" src="/image/tenant-explorer.jpg"></a>
+			  <br>
+				<p><a class="btn btn-lg btn-primary" href="/static/tenantexplorer.html" role="button">Tenant Explorer</a></p>
+            </div>
+          </div>
+        </div>
+		
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Office Team Profile</div>
+            <div class="panel-body text-center">
+              <img class="img-responsive" src="/image/office-team.png" style="opacity: 0.3; filter: alpha(opacity=30); background-color: #000;">
+			  <br>
+				<p><a class="btn btn-lg btn-primary disabled" href="/team/" role="button">My Team</a></p>
+            </div>
+          </div>
+        </div>
+		
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Office Addins</div>
+            <div class="panel-body text-center">
+              <img class="img-responsive" src="/image/office-team.png" style="opacity: 0.3; filter: alpha(opacity=30); background-color: #000;">
+			  <br>
+				<p><a class="btn btn-lg btn-primary disabled" href="/addin/" role="button">Add-ins</a></p>
+            </div>
+          </div>
+        </div>
+		
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Anomaly Detection</div>
+            <div class="panel-body text-center">
+              <img class="img-responsive" src="/image/office-team.png" style="opacity: 0.3; filter: alpha(opacity=30); background-color: #000;">
+			  <br>
+				<p><a class="btn btn-lg btn-primary disabled" href="/anomaly/" role="button">Anomalies</a></p>
+            </div>
+          </div>
+        </div>
+		
+      </div>
+    </div>
+      <iframe id="logging" src="" onload="this.width=700;this.height=0;" frameBorder="0"></iframe>
+
+
+
+
+</body>
+</html>	

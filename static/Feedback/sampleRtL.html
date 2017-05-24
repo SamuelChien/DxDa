@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+	<!--Script needed to embed OfficeBrowserFeedback start-->
+		<script type="text/javascript">
+			window.OfficeBrowserFeedback = window.OfficeBrowserFeedback || {};
+
+			window.OfficeBrowserFeedback.initOptions = {
+				appId: 1234, // Replace by your own app id
+				stylesUrl: "styles/OfficeBrowserFeedback.css",
+				intlUrl: "intl/",
+				environment: 1, //0 - Prod, 1 - Int
+				primaryColour: "#008272",
+				secondaryColour: "#004B50",
+				userEmail: "dhmalhot@microsoft.com",
+				userVoice: {
+					url: "http://go.microsoft.com/fwlink/?LinkID=786935",
+					termsOfServiceUrl: "http://go.microsoft.com/fwlink/?LinkID=786896",
+					privacyPolicyUrl: "http://go.microsoft.com/fwlink/?LinkID=786895"
+				}
+			};
+
+			(function (d, s, id) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				if (d.getElementById(id)) { return; }
+				js = d.createElement(s); js.id = id;
+				js.src = "scripts/OfficeBrowserFeedback.js";
+				fjs.parentNode.insertBefore(js, fjs);
+			}(document, 'script', 'officebrowserfeedback-jssdk'));
+		</script>
+	<!--end-->
+
+	<title>Office Browser Feedback sample</title>
+</head>
+<body>
+	<input type="button" value="Give Multi Feedback" style="height:100px; width:200px"
+		onclick="OfficeBrowserFeedback.multiFeedback().then(
+			function () { console.log('suceeded'); },
+			function (err) { console.log('failed with error: ' + err); });" />
+	<input type="button" value="Give Single Feedback" style="height:100px; width:200px"
+		onclick="OfficeBrowserFeedback.singleFeedback('Frown').then(
+			function () { console.log('suceeded'); },
+			function (err) { console.log('failed with error: ' + err); });" />
+</body>
+</html>

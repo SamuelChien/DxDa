@@ -1,0 +1,472 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Usage Logs</title>
+	<link rel="shortcut icon" href="/static/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+		
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+  
+  </head>
+  <body>
+       
+        <script>
+            
+            // retrieve target user information
+            function getParameterByName(name) {
+                name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                    results = regex.exec(location.search);
+                return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            }
+
+            // default chart dimensions
+            var width = 600, height = 250;
+
+
+            // helper function for getting json data
+            var getJsonData = function (url) {
+                var json = null;
+
+                $.ajax({
+                    'async': false,
+                    'global': false,
+                    'url': url,
+                    'type': 'GET',
+                    'dataType': "text",
+                    'success': function (data) { json = data; }
+                });
+                return $.parseJSON(json);
+            };
+
+
+            // helper function for getting data for a single data series
+            var getDataForChartSeries = function (sql, seriesName, color) {
+
+                var base_url = 'http://hs-spades-01/table/';
+                var url = '';
+
+                if (sql.length < 1) return;
+                if (seriesName.length < 1) seriesName = "";
+                if (color.length < 1) color = "#4286f4";
+
+                var series1 = new Array();
+                series1.key = seriesName;
+                url = encodeURI(base_url + sql);
+                series1.values = getJsonData(url);
+                series1.color = color;
+
+                var dataArray = new Array();
+                dataArray.push(series1);
+
+                return dataArray;
+            }
+
+            // draws the people chart
+            var Rolling28DPageViewsPerDayChart = function () {               
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, 100])
+                    //.width(width)
+                    .height(height)
+                    .useInteractiveGuideline(true)
+                    .showControls(false)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format('%b %e')(new Date(d)) })
+//                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('People who accessed your content')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+                d3.select('#pageviewsrolling28d_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = 'SELECT CalendarDate AS Date, PageViewsRolling28D AS Y FROM vRolling28DStats ORDER BY Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "Rolling 28D Page views", "#2CA02C");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+            // draws the document chart
+            var Rolling28DActiveUsersPerDayChart = function () {
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, ])
+                    //.width(width)
+                    .height(height)
+                    .showControls(false)
+                    .useInteractiveGuideline(true)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format("%b %e")(new Date(d)) })
+//                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('Shared WXP Documents Edited')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+
+                d3.select('#activeusersrolling28d_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = 'SELECT CalendarDate AS Date, UserCountRolling28D AS Y FROM vRolling28DStats ORDER BY Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "Rolling 28D Active Users", "#f4c242");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+
+            // draws the people chart
+            var PageViewsPerDayChart = function () {               
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, 100])
+                    //.width(width)
+                    .height(height)
+                    .useInteractiveGuideline(true)
+                    .showControls(false)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format('%b %e')(new Date(d)) })
+//                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('People who accessed your content')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+                d3.select('#pageviews_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = sql = 'SELECT Date, COUNT(*) AS Y FROM [vDailyLogTable3] GROUP BY Date ORDER BY Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "Page views", "#2CA02C");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+            // draws the document chart
+            var ActiveUsersPerDayChart = function () {
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, ])
+                    //.width(width)
+                    .height(height)
+                    .showControls(false)
+                    .useInteractiveGuideline(true)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format("%b %e")(new Date(d)) })
+//                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('Shared WXP Documents Edited')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+
+                d3.select('#activeusers_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = 'SELECT Date, COUNT(DISTINCT consoleuser) AS Y FROM [vDailyLogTable3] GROUP BY Date ORDER BY Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "Active Users", "#f4c242");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+            // draws the document chart
+            var NewUsersPerDayChart = function () {
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.UsageDate).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, ])
+                    //.width(width)
+                    .height(height)
+                    .showControls(false)
+                    .useInteractiveGuideline(true)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format("%b %e")(new Date(d)) })
+//                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('Shared WXP Documents Edited')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+
+                d3.select('#newusers_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = 'SELECT UsageDate, NewUserCount AS Y FROM [vNewUsersPerDay] ORDER BY UsageDate FOR JSON PATH';
+                        return getDataForChartSeries(sql, "New Users", "#1F77B4");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+      var base_url2 = 'http://hs-spades-01/table/';
+      var sql_all_users = 'SELECT COUNT(DISTINCT consoleuser) AS TotalUniqueUsers, COUNT(*) AS TotalPageViews FROM LogTable3  FOR JSON PATH';
+      var urlTotalUniqueUsers = encodeURI(base_url2 + sql_all_users);
+//      alert(urlTotalUniqueUsers);
+			$.getJSON( urlTotalUniqueUsers, function( data ) {
+			  $("#TotalUniqueUsers").html(data[0].TotalUniqueUsers);
+ 			  $("#TotalPageViews").html(data[0].TotalPageViews);
+			});	
+
+      var sql_all_users = 'SELECT COUNT(DISTINCT consoleuser) AS Last28DUniqueUsers, COUNT(*) AS Last28DPageViews FROM LogTable3 WHERE request_time >  DATEADD(DAY, -27, CAST(GETDATE() AS DATE)) FOR JSON PATH';
+      var urlTotalUniqueUsers = encodeURI(base_url2 + sql_all_users);
+//      alert(urlTotalUniqueUsers);
+			$.getJSON( urlTotalUniqueUsers, function( data ) {
+			  $("#Last28DUniqueUsers").html(data[0].Last28DUniqueUsers);
+ 			  $("#Last28DPageViews").html(data[0].Last28DPageViews);
+			});	
+        </script>
+
+
+
+      <div style="margin:10px;padding:10px;">
+          <!-- Network Charts --> 
+          <table>
+          <tr>
+            <td ><h3 style="margin:10px;">Total Page Views</h3> <h2 id="TotalPageViews" style="margin:10px;"></h2>
+            </td>
+            <td ><h3 style="margin:10px;">Total Unique Users </h3><h2 id="TotalUniqueUsers" style="margin:10px;"></h2>
+            </td>
+            <td >
+            </td>
+          </tr>
+          <tr>
+            <td ><h3 style="margin:10px;">Last 28D Page Views</h3> <h2 id="Last28DPageViews" style="margin:10px;"></h2>
+            </td>
+            <td ><h3 style="margin:10px;">Last 28D Unique Users </h3><h2 id="Last28DUniqueUsers" style="margin:10px;"></h2>
+            </td>
+            <td >
+            </td>
+          </tr>
+		  <tr>
+			  <td>
+			  <div id="pageviewsrolling28d_chart" style="float: left; width: 500px; height: 400px;margin:10px;">
+				  <h3 id="Influence">Rolling 28D Page Views/Day</h3>
+				  <p class="chat-explanation" style="height:40px;">Number of page views in last rolling 28 days.</p>
+				  <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+				  <script>$(document).ready(nv.addGraph(Rolling28DPageViewsPerDayChart()));</script>
+			  </div>
+			  </td>
+			<td>
+			  
+			  <div id="activeusersrolling28d_chart" style="float: left; width: 500px;height: 400px;margin:10px;">
+				  <h3 id="Influence">Rolling 28D Unique Users/Day</h3>
+				  <p class="chat-explanation" style="height:40px;">Number of unique users in last rolling 28 days.</p>
+				  <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+				  <script>$(document).ready(nv.addGraph(Rolling28DActiveUsersPerDayChart()));</script>
+			  </div>
+			  
+			  </td>
+			<td>
+			  
+			  
+			  </td>
+			  </tr>
+		  <tr>
+			  <td>
+			  <div id="pageviews_chart" style="float: left; width: 500px; height: 400px;margin:10px;">
+				  <h3 id="Influence">Page Views/Day</h3>
+				  <p class="chat-explanation" style="height:40px;">Number of page views per day.</p>
+				  <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+				  <script>$(document).ready(nv.addGraph(PageViewsPerDayChart()));</script>
+			  </div>
+			  </td>
+			<td>
+			  
+			  <div id="activeusers_chart" style="float: left; width: 500px;height: 400px;margin:10px;">
+				  <h3 id="Influence">Unique Users/Day</h3>
+				  <p class="chat-explanation" style="height:40px;">Number of unique users per day.</p>
+				  <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+				  <script>$(document).ready(nv.addGraph(ActiveUsersPerDayChart()));</script>
+			  </div>
+			  
+			  </td>
+			<td>
+			  
+			  <div id="newusers_chart" style="float: left; width: 500px;height: 400px;margin:10px;">
+				  <h3 id="Influence">New Users/Day</h3>
+				  <p class="chat-explanation" style="height:40px;">Number of unique users per day.</p>
+				  <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+				  <script>$(document).ready(nv.addGraph(NewUsersPerDayChart()));</script>
+			  </div>
+			  
+			  </td>
+			  </tr>
+		  </table>
+          
+
+          <!-- Network Badge Legend and Recommendation --> 
+            <!-- Network Tables --> 
+            <div ">
+              
+              <h3 style="margin-top:40px;">Top users</h3>
+              <table id="TopInsightsUsers" class="display compact" cellspacing="0" width="100%"></table>
+              <h3 style="margin-top:40px;">Top viewed profiles</h3>
+              <table id="TopInsightsProfiles" class="display compact" cellspacing="0" width="100%"></table>
+
+               <script>
+
+                  // draw the target user network score table
+                  var base_url = 'http://hs-spades-01/table/';
+
+
+                  // draws the 5 nearest neighbor network score table
+//                  var sql = "SELECT consoleuser AS Alias, COUNT(*) AS PageViews, MAX(request_time) AS LastAccessedAt FROM dbo.LogTable3 WHERE consoleuser != 'consoleuser' AND request_time > '2017-04-25' GROUP BY consoleuser ORDER BY PageViews desc FOR JSON PATH";
+                  var sql = "SELECT consoleuser AS Alias, COUNT(*) AS PageViews, MAX(request_time) AS LastAccessedAt, MIN(request_time) AS XYZ FROM dbo.LogTable3 WHERE consoleuser != 'consoleuser' AND request_time > '2017-04-25' GROUP BY consoleuser ORDER BY PageViews desc FOR JSON PATH";
+//                  var sql = "SELECT consoleuser AS Alias, COUNT(*) AS PageViews, MIN(request_time) AS FirstAccessedAt, MAX(request_time) AS LastAccessedAt FROM dbo.LogTable3 WHERE consoleuser != 'consoleuser' AND request_time > '2017-04-25' GROUP BY consoleuser ORDER BY PageViews desc FOR JSON PATH";
+//                  alert(sql);
+                  var url = encodeURI(base_url + sql + "?type=datatables");
+//                  alert(url);
+                  $('#TopInsightsUsers').DataTable({
+                      ajax: {
+                          url: url,
+                          type: 'GET'
+                      }
+                      ,ordering: true
+                      ,"order": [[ 1, "desc" ]]
+                     , columns: [
+                         { data: 'Alias', title: 'Alias', defaultContent: "" , render: function ( data, type, row, meta ) {
+                            return "<a target='_new' href='/static/users2.html?alias=" + data + "'>" + data + '</a>';}}
+                        , { data: 'PageViews', title: 'Total Page Views' }
+                        , { data: 'XYZ', title: 'First Accessed At' }
+                        , { data: 'LastAccessedAt', title: 'Last Accessed At' }
+
+                     ]
+                  });
+
+                  // draws the 5 nearest neighbor network score table
+                  var sql = "SELECT Alias AS Alias, COUNT(*) AS PageViews, MIN(request_time) AS FirstAccessedAt, MAX(request_time) AS LastAccessedAt FROM dbo.LogTable3 WHERE consoleuser != 'consoleuser' AND request_time > '2017-04-25' GROUP BY Alias ORDER BY PageViews desc FOR JSON PATH";
+                  var url = encodeURI(base_url + sql + "?type=datatables");
+//                  alert(url);
+
+                  $('#TopInsightsProfiles').DataTable({
+                      ajax: {
+                          url: url,
+                          type: 'GET'
+                      }
+                      ,ordering: true
+                      ,"order": [[ 1, "desc" ]]
+                     , columns: [
+                         { data: 'Alias', title: 'Alias', defaultContent: "" , render: function ( data, type, row, meta ) {
+                            return "<a target='_new' href='/user/?alias=" + data + "'>" + data + '</a>';}}
+                        , { data: 'PageViews', title: 'Total Page Views' }
+                        , { data: 'FirstAccessedAt', title: 'First Accessed At' }
+                        , { data: 'LastAccessedAt', title: 'Last Accessed At' }
+
+                     ]
+                  });
+
+                </script>
+          </div>
+          
+      </div>
+
+      
+    </body>
+</html>	

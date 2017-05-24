@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Tenant List</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+  </head>
+  <body>
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Hack 2017 Tenants</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+        </div>
+	  
+
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <div>
+                <a href="http://hs-spades-01/static/interactive_scatter_plot.html"> Tenant Explorer</a> 
+                <h1 id="tenantName">Enterprise SPOEnabled Tenants</h1>                
+                <h3 id="fStatus">If a Tenant isn't found below, they most likely do not have 250+ SPOEnabled Seats or are not Enterprise.</h3>
+                <h3 id="fStatus2">Please visit http://tenants for more informatiom.</h3>
+                <br /><br />
+            </div>
+
+
+		  <div class="table-responsive">
+          
+            <table id="example" class="display" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+				  <th>TenantId</th>
+				  <th>Tenant Name</th>
+				  <th>Country</th>
+				  <th>FunnelStatus</th>
+				  <th>CloudEnabledUsers</th>
+                  <th>WXPCloudCoauthors</th>
+				</tr>
+              </thead>
+              <tbody>
+              </tbody>
+			</table>
+		  </div>
+
+		  <hr/>
+
+
+            <a href="http://hs-spades-01/static/interactive_scatter_plot.html"> Tenant Explorer</a> 
+
+
+
+
+        </div>
+  	  </div>
+	</div>
+      <iframe id="logging" src="" onload="this.width=700;this.height=0;" frameBorder="0"></iframe>
+
+	<script type="text/javascript" language="javascript">
+        //GEt Current user
+        function getCurrentConsoleUser() {
+            var consoleuser = "";
+            $.ajax({
+                type: "GET",
+                url: "/user",
+                success: function (data) {
+                    console.log("data:" + data);
+                    consoleuser = data;
+                },
+                async: false
+            })
+            return consoleuser == null ? "" : consoleuser;
+        }
+
+        $(document).ready(function() {
+            
+            var consoleuser = getCurrentConsoleUser();
+            document.getElementById('logging').src = "http://hs-spades-01:419/log2.php?alias=" + "TenantListPage" + "&consoleuser=" + consoleuser + "&page_url=" + encodeURIComponent(window.location.href);
+
+
+		$('#example').DataTable( {
+			ajax: {
+			    url: "http://hs-spades-01/table/SELECT%20%2A%20FROM%20vwEnterpriseTenants%20FOR%20JSON%20PATH;?type=datatables",
+				type: 'GET'
+			},
+		    columns: [
+				{ data: "TenantId", 
+				render: function(data, type) {return '<a href="http://hs-spades-01/static/tenant.html?TenantId=' + data + '">"' + data + '"</a>';} },
+				{ data: "OrgName" },
+				{ data: "CountryCode" },
+				{ data: "FunnelStatus" },
+                { data: "CloudEnabledUsers" },
+				{ data: "WXPCloudCoauthors" }
+			]
+		})
+		});
+	
+	</script>
+
+</body>
+</html>	

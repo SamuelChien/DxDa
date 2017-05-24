@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>User Profile</title>
+	<link rel="shortcut icon" href="/image/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	<link rel="stylesheet" type="text/css" href="//getbootstrap.com/examples/dashboard/dashboard.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+	<style>
+	.navbar-brand {
+    position: absolute;
+    left: 50%;
+    margin-left: -50px !important;
+	text-align: center;
+	display:block;
+    margin: auto;
+	}
+	
+			.link {
+	  fill: none;
+	  stroke: #666;
+	  stroke-width: 1.5px;
+	}
+
+	.link.excel {
+	  stroke: green;
+	}
+
+	.link.word {
+		stroke: blue;
+	}
+
+	.link.powerpoint {
+		stroke: red;
+	}
+
+	.link.resolved {
+	  stroke-dasharray: 0,2 1;
+	}
+
+	circle {
+	  fill: #ccc;
+	  stroke: #333;
+	  stroke-width: 1.5px;
+	}
+
+	text {
+	  font: 10px sans-serif;
+	  pointer-events: none;
+	  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+	}
+	</style>
+  </head>
+  <body>
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a href="/" title="Office Data Science">
+		    <img src="http://hs-spades-01/image/ods-logo.png" style="height:50px" class="img-responsive" alt="user">
+		  </a>
+         </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Settings</a></li>
+            <li><a href="/about">About</a></li>
+          </ul>
+          <form class="navbar-form navbar-right" action="/user/" method="GET">
+            <input type="text" name="alias" class="form-control" placeholder="Search alias...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+		  <br><br><br>
+
+		  <img src="/image/DIG.jpg" class="img-responsive center-block">
+        </div>
+  	  </div>
+	</div>
+	
+</body>
+</html>	

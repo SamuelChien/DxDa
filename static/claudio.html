@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Proficiency scores</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+	
+	<script type="text/javascript">
+		function getParameterByName(name, url) {
+			if (!url) url = window.location.href;
+			name = name.replace(/[\[\]]/g, "\\$&");
+			var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+				results = regex.exec(url);
+			if (!results) return null;
+			if (!results[2]) return '';
+			return decodeURIComponent(results[2].replace(/\+/g, " "));
+		}
+		
+		// helper function for getting data for a single data series
+		var getDataForChartSeries = function (sql, seriesName, color) {
+
+			var base_url = 'http://hs-spades-01/table/';
+			var url = '';
+
+			if (sql.length < 1) return;
+			if (seriesName.length < 1) seriesName = "";
+			if (color.length < 1) color = "#4286f4";
+
+			var series1 = new Array();
+			series1.key = seriesName;
+			url = encodeURI(base_url + sql);
+			series1.values = getJsonData(url);
+			series1.color = color;
+
+			var dataArray = new Array();
+			dataArray.push(series1);
+
+			return dataArray;
+		}
+
+		function addLine(chart, gc,xgrid)
+		{
+			// add vertical lines
+			var custLine =  d3.select(gc)
+			.select('.nv-areaWrap')
+			.append('g');
+
+			custLine.selectAll('line')
+				.data(xgrid)
+				.enter()
+				.append('line')
+				.attr({
+				x1: function(d){ return chart.xAxis.scale()(d) },
+				y1: function(d){ return chart.yAxis.scale()(0) },
+				x2: function(d){ return chart.xAxis.scale()(d) },
+				y2: function(d){ return chart.yAxis.scale()(100) }
+			})
+			.style("stroke", "#000000");		
+			
+			
+		}
+		
+
+		var width = 500,
+		height = 400;		
+		
+		var svgWord = d3.select("#graphword #svgword")
+			.attr("width", width)
+			.attr("height", height);
+
+		// helper function for getting json data
+		var getJsonData = function (url) {
+			var json = null;
+
+			$.ajax({
+				'async': false,
+				'global': false,
+				'url': url,
+				'type': 'GET',
+				'dataType': "text",
+				'success': function (data) { json = data; }
+			});
+			return $.parseJSON(json);
+		};
+			
+		var PowerPointChart = function () {
+
+			var chart = nv.models.stackedAreaChart()
+
+				.x(function (d) { return d.X })
+				.y(function (d) { return d.Y })
+				.margin({ top: 30, right: 20, bottom: 30, left: 50 })
+				.forceY([0, ])
+				//.width(width)
+				.height(height)
+				.showControls(false)
+				.useInteractiveGuideline(true)
+				.noData("There is no data to display.")
+			;
+
+			chart.xAxis
+				.axisLabel('segment')
+				.showMaxMin(true)
+				.tickFormat(d3.format('d'))
+			;
+
+			//chart.xScale(d3.time.scale());
+
+			chart.yAxis
+				.axisLabel('fraction of users')
+				.showMaxMin(true)
+				.tickFormat(d3.format('d'))
+			;
+
+			d3.select('#powerpointgraph svg')
+				.datum(function () {
+					var app = 'PowerPoint';
+					var sql = 'SELECT segment AS X, (100*P) AS Y FROM WXPSegmentsDistribution WHERE app=\'' + app + '\' FOR JSON PATH';
+					return getDataForChartSeries(sql, "PowerPoint", "#d24726");
+				})
+				.transition().duration(500)
+				.style({ 'height': height + 50 })
+				.call(chart)
+			;
+
+			nv.utils.windowResize(chart.update);
+
+			return chart;
+		};
+		
+
+		var ExcelChart = function () {
+
+			var chart = nv.models.stackedAreaChart()
+
+				.x(function (d) { return d.X })
+				.y(function (d) { return d.Y })
+				.margin({ top: 30, right: 20, bottom: 30, left: 50 })
+				.forceY([0, ])
+				//.width(width)
+				.height(height)
+				.showControls(false)
+				.useInteractiveGuideline(true)
+				.noData("There is no data to display.")
+			;
+
+			chart.xAxis
+				.axisLabel('segment')
+				.showMaxMin(true)
+				.tickFormat(d3.format('d'))
+			;
+
+			//chart.xScale(d3.time.scale());
+
+			chart.yAxis
+				.axisLabel('fraction of users')
+				.showMaxMin(true)
+				.tickFormat(d3.format('d'))
+			;
+
+			d3.select('#excelgraph svg')
+				.datum(function () {
+					var app = 'Excel';
+					var sql = 'SELECT segment AS X, (100*P) AS Y FROM WXPSegmentsDistribution WHERE app=\'' + app + '\' FOR JSON PATH';
+					return getDataForChartSeries(sql, "Excel", "#217346");
+				})
+				.transition().duration(500)
+				.style({ 'height': height + 50 })
+				.call(chart)
+			;
+
+			nv.utils.windowResize(chart.update);
+
+			return chart;
+		};
+		
+
+		var WordChart = function () {
+
+			var chart = nv.models.stackedAreaChart()
+
+				.x(function (d) { return d.X })
+				.y(function (d) { return d.Y })
+				.margin({ top: 30, right: 20, bottom: 30, left: 50 })
+				.forceY([0, ])
+				//.width(width)
+				.height(height)
+				.showControls(false)
+				.useInteractiveGuideline(true)
+				.noData("There is no data to display.")
+			;
+
+			chart.xAxis
+				.axisLabel('segment')
+				.showMaxMin(true)
+				.tickFormat(d3.format('d'))
+			;
+
+			//chart.xScale(d3.time.scale());
+
+			chart.yAxis
+				.axisLabel('fraction of users')
+				.showMaxMin(true)
+				.tickFormat(d3.format('d'))
+			;
+
+			d3.select('#wordgraph svg')
+				.datum(function () {
+					var app = 'Word';
+					var sql = 'SELECT segment AS X, (100*P) AS Y FROM WXPSegmentsDistribution WHERE app=\'' + app + '\' FOR JSON PATH';
+					return getDataForChartSeries(sql, "Word", "#2b579a");
+				})
+				.transition().duration(500)
+				.style({ 'height': height + 50 })
+				.call(chart)
+			;
+
+			nv.utils.windowResize(chart.update);
+
+			return chart;
+		};
+		
+	</script>
+	
+  </head>
+  <body>
+  
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Hack 2017</a>
+        </div>
+      </div>
+    </nav>
+
+	 <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+          </ul>
+		  
+        </div>
+	  </div>
+	  
+	 <div class="container-fluid">
+      <div class="row"> 	
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+			<h2><div style="display: inline"  id="Alias"></div></h2>
+			Your PUID is <div style="display: inline" id="UserId"></div><br/>
+			Your Excel proficiency  is <div id="Excel" style="display: inline"></div>&nbsp;(<div id="ExcelScore" style="display: inline"></div>)<br/>
+			Your PowerPoint proficiency  is <div id="PowerPoint" style="display: inline"></div>&nbsp;(<div id="PowerPointScore" style="display: inline"></div>)<br/>
+			Your Word proficiency  is <div id="Word" style="display: inline"></div>&nbsp;(<div id="WordScore" style="display: inline"></div>)<br/>			
+
+			<h3>Distribution of expertise within Microsoft</h3>		
+			<table>
+				<tr>
+				<td>
+				<div id="excelgraph" style="float: left; width: 500px;height: 500px;margin:10px;">
+				<svg id="svgword" style="margin-top:10px;margin-bottom:10px;"></svg>
+				<script>
+					xchart = ExcelChart();
+					$(document).ready(nv.addGraph(xchart));
+				</script>
+				</div>
+				</td>
+				<td>
+				<div id="powerpointgraph" style="float: left; width: 500px;height: 500px;margin:10px;">
+				<svg id="svgword" style="margin-top:10px;margin-bottom:10px;"></svg>
+				<script>
+					pchart = PowerPointChart();
+					$(document).ready(nv.addGraph(pchart));
+				</script>
+				</div>
+				</td>
+				<td>
+				<div id="wordgraph" style="float: left; width: 500px;height: 500px;margin:10px;">
+				<svg id="svgword" style="margin-top:10px;margin-bottom:10px;"></svg>
+				<script>
+					wchart = WordChart();
+					$(document).ready(nv.addGraph(wchart));
+				</script>
+				</div>
+				</td>
+				</tr>
+			</table>
+			
+			<h2>Excel Usage</h2>
+			<table id="Table2" class="display" cellspacing="0" width="100%">
+			<thead>
+			<tr>
+			  <th>Command Name</th>
+			  <th>Glump</th>
+			  <th>Segment</td>
+			  <th>Count</td>
+			  <th>Support</td>
+			</tr>
+			</thead>
+			</table>
+	
+			<h2>PowerPoint Usage</h2>
+			<table id="Table3" class="display" cellspacing="0" width="100%">
+			<thead>
+			<tr>
+			  <th>Command Name</th>
+			  <th>Glump</th>
+			  <th>Segment</td>
+			  <th>Count</td>
+			  <th>Support</td>
+			</tr>
+			</thead>
+			</table>
+
+			
+			<h2>Word Usage</h2>
+			<table id="Table4" class="display" cellspacing="0" width="100%">
+			<thead>
+			<tr>
+			  <th>Command Name</th>
+			  <th>Glump</th>
+			  <th>Segment</td>
+			  <th>Count</td>
+			  <th>Support</td>
+			</tr>
+			</thead>
+			</table>			
+		
+
+			<table id="Table1" class="display" cellspacing="0" width="100%">
+			<thead>
+			<tr>
+			  <th>App</th>
+			  <th>Percentage of features in segments used</td>
+			</tr>
+			</thead>
+			</tbody>
+			</table>
+
+		
+        </div>
+		
+      </div>
+	  
+	  
+	  
+    </div>
+	<script type="text/javascript" language="javascript">
+		$(document).ready(function() {
+			var alias = getParameterByName("alias");
+			if (alias==null) 
+			{
+				alert("missing alias parameter");
+				return;
+			}
+			var url = "".concat("http://hs-spades-01/table/UserProficiencyScores/Alias/", alias);
+			$.getJSON( url, function( data ) {			
+				$("#UserId").html(data[0].UserId)
+				$("#Alias").html(data[0].Alias)
+				$("#Word").html(data[0].WordBadge)
+				$("#Excel").html(data[0].ExcelBadge)
+				$("#PowerPoint").html(data[0].PowerPointBadge)
+				$("#WordScore").html(data[0].Word)
+				$("#ExcelScore").html(data[0].Excel)
+				$("#PowerPointScore").html(data[0].PowerPoint)
+
+				$('#Table1').DataTable( {
+						ajax: {
+							url: "http://hs-spades-01/table/CmdCoverage/UserId/" + data[0].UserId + "/?type=datatables",
+							type: 'GET'
+						},
+						"bPaginate": false,
+						"lengthChange": false,
+						"searching": false,
+						columns: [
+							{ data: "app" },
+							{ data: "CommandCoverage" }
+						]
+					})
+
+				$('#Table2').DataTable( {
+						ajax: {
+							url: "http://hs-spades-01/table/ExcelCmdCoverage/UserId/" + data[0].UserId + "/?type=datatables",
+							type: 'GET'
+						},
+						"lengthChange": false,
+						"searching": false,
+						order: [[ 2, "asc", 4, "desc" ]],
+						"pageLength": 10,
+						columns: [
+							{ data: "CommandName" },
+							{ data: "Glump" },
+							{ data: "CommandSegment" },
+							{ data: "UserCount", "defaultContent":0 },
+							{ data: "CommandSupport" }
+						]
+					})
+
+				$('#Table4').DataTable( {
+					ajax: {
+						url: "http://hs-spades-01/table/WordCmdCoverage/UserId/" + data[0].UserId + "/?type=datatables",
+						type: 'GET'
+					},
+					"lengthChange": false,
+					"pageLength": 10,
+					"searching": false,
+					order: [[ 2, "asc" ]],
+					columns: [
+						{ data: "CommandName" },
+						{ data: "Glump" },
+						{ data: "CommandSegment" },
+						{ data: "UserCount", "defaultContent":0 },
+						{ data: "CommandSupport" }
+					]
+				})
+
+				$('#Table3').DataTable( {
+						ajax: {
+							url: "http://hs-spades-01/table/PowerPointCmdCoverage/UserId/" + data[0].UserId + "/?type=datatables",
+							type: 'GET'
+						},
+						"lengthChange": false,
+						"pageLength": 10,
+						"searching": false,
+						order: [[ 2, "asc" ]],
+						columns: [
+							{ data: "CommandName" },
+							{ data: "Glump" },
+							{ data: "CommandSegment" },
+							{ data: "UserCount", "defaultContent":0 },
+							{ data: "CommandSupport" }
+						]
+					})
+				
+				addLine(xchart, '#excelgraph svg', [parseInt(data[0].Excel)])
+				addLine(wchart, '#wordgraph svg', [parseInt(data[0].Word)])
+				addLine(pchart, '#powerpointgraph svg', [parseInt(data[0].PowerPoint)])
+				
+			});
+	
+		});
+		
+	
+	</script>
+
+</body>
+</html>	

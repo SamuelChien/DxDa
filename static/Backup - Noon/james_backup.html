@@ -1,0 +1,512 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>User Network</title>
+	<link rel="shortcut icon" href="/static/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+		
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+  
+    <style>
+        /* local styles */
+
+        /* badges */
+
+        .award-text {
+            font-family:verdana;
+            font-size: 1em;
+            color: dimgray;
+            vertical-align: middle;
+        }
+
+        .award {
+            vertical-align: middle;
+            font-size: 1.5em;
+            color: gold;
+        }
+
+
+        .platinum {
+            color: #5B9BD5;
+        }
+
+        .gold {
+            color: #FFC000;
+        }
+
+        .silver {
+            color: #7F7F7F;
+        }
+
+        .bronze {
+            color: #C55A11;
+        }
+
+
+
+    </style>
+  
+  </head>
+  <body>
+       
+ 
+
+        <script>
+            
+            // retrieve target user information
+            function getParameterByName(name) {
+                name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                    results = regex.exec(location.search);
+                return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            }
+
+            var alias = getParameterByName('alias');
+            if (alias.length < 1) alias = "jamescl";
+
+
+            // default chart dimensions
+            var width = 600, height = 250;
+
+
+            // helper function for getting json data
+            var getJsonData = function (url) {
+                var json = null;
+
+                $.ajax({
+                    'async': false,
+                    'global': false,
+                    'url': url,
+                    'type': 'GET',
+                    'dataType': "text",
+                    'success': function (data) { json = data; }
+                });
+                return $.parseJSON(json);
+            };
+            // not used, has example of combining series
+            var dataForChart = function (alias) {
+
+                var base_url = 'http://hs-spades-01/table/';
+                var app = 'WXP'
+                var url = '';
+                var sql = '';
+
+                var series1 = new Array();
+                series1.key = "Your Rank";
+                sql = 'SELECT Date, PercentileRank AS Y FROM vwUserInfluenceScoreTrend WHERE Alias=\'' + alias + '\' AND AppName = \'' + app + '\' Order by Date FOR JSON PATH';
+                url = encodeURI(base_url + sql);
+                series1.values = getJsonData(url);        
+                series1.color = "#1F77B4";
+
+                var series2 = new Array();
+                series2.key = "Docs";
+                sql = 'SELECT Date, NumSharedWXPDocumentEdited AS Y FROM vwUserDocCollaborationTrend WHERE Alias=\'' + alias + '\' Order by Date FOR JSON PATH';
+                url = encodeURI(base_url + sql);
+                series2.values = getJsonData(url);
+                series2.color = "#2CA02C";
+
+                var series3 = new Array();
+                series3.key = "People";
+                sql = 'SELECT Date, WXPOutboundDegree AS Y FROM vwUserPeopleCollaborationTrend WHERE Alias=\'' + alias + '\' Order by Date FOR JSON PATH';
+                url = encodeURI(base_url + sql);
+                series3.values = getJsonData(url)        
+                series3.color = "#f4c242";
+
+                var dataArray = new Array();
+                dataArray.push(series1);
+                dataArray.push(series2);
+                dataArray.push(series3);
+
+                return dataArray;
+            };
+
+
+
+
+            // helpder function for getting data for a single data series
+            var getDataForChartSeries = function (sql, seriesName, color) {
+
+                var base_url = 'http://hs-spades-01/table/';
+                var url = '';
+
+                if (sql.length < 1) return;
+                if (seriesName.length < 1) seriesName = "";
+                if (color.length < 1) color = "#4286f4";
+
+                var series1 = new Array();
+                series1.key = seriesName;
+                url = encodeURI(base_url + sql);
+                series1.values = getJsonData(url);
+                series1.color = color;
+
+                var dataArray = new Array();
+                dataArray.push(series1);
+
+                return dataArray;
+            }
+
+
+            // draws the rank chart            
+            var RankChart = function () {                
+
+                var chart = nv.models.lineChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    //
+                    .forceY([, 0])
+                    //.width(width)
+                    .height(height)
+                    .useInteractiveGuideline(true)
+                    //.showControls(false)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format('%b %e')(new Date(d)) })
+                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/8/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('Rank')
+                    .tickFormat(d3.format('0,000'))
+                    .showMaxMin(false);
+               
+                var app = 'WXP';
+                var sql = sql = 'SELECT Date, ScoreRank AS Y FROM vwUserInfluenceScoreTrend WHERE Alias=\'' + alias + '\' AND AppName = \'' + app + '\' Order by Date FOR JSON PATH';
+                var data = getDataForChartSeries(sql, "Rank", "#1F77B4");
+                var max = d3.max(data[0].values, function (d) { return parseInt(d.Y); } );
+                var max = max + 100;
+
+                chart.yDomain([max, 0]);
+
+                d3.select('#net_rank_chart svg')                    
+                    .datum(data)
+                    .transition().duration(500)                    
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+            // draws the people chart
+            var PeopleCollabChart = function () {               
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, 100])
+                    //.width(width)
+                    .height(height)
+                    .useInteractiveGuideline(true)
+                    .showControls(false)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format('%b %e')(new Date(d)) })
+                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('People who accessed your content')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+
+                d3.select('#net_people_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = sql = 'SELECT Date, WXPOutboundDegree AS Y FROM vwUserPeopleCollaborationTrend WHERE Alias=\'' + alias + '\' Order by Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "People", "#2CA02C");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+            // draws the document chart
+            var DocCollabChart = function () {
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, ])
+                    //.width(width)
+                    .height(height)
+                    .showControls(false)
+                    .useInteractiveGuideline(true)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format("%b %e")(new Date(d)) })
+                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('Shared WXP Documents Edited')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+
+                d3.select('#net_doc_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = sql = 'SELECT Date, NumSharedWXPDocumentEdited AS Y FROM vwUserDocCollaborationTrend WHERE Alias=\'' + alias + '\' Order by Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "Documents", "#f4c242");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+        </script>
+
+
+
+      <div style="margin:0px;padding:0px;">
+          
+
+          <div class="dropdown" id="" style="visibility:hidden;">
+              <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" id="btnAppContext">
+                  Document Types
+                  <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                  <li><a href="#">Word</a></li>
+                  <li><a href="#">Excel</a></li>
+                  <li><a href="#">PowerPoint</a></li>
+                  <li><a href="#">OneNote</a></li>
+                  <li><a href="#">Word/Excel/PowerPoint</a></li>
+                  <li><a href="#">Word/Excel/PowerPoint/OneNote</a></li>
+              </ul>
+          </div>
+
+          <script>
+              var appContext = "Word/Excel/PowerPoint";
+
+              $('#btnAppContext').text(appContext);
+
+              $(".dropdown-menu li a").click(function () {
+
+                  $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
+                  $(this).parents(".dropdown").find('.btn').val($(this).data('value'));
+                  appContext = $(this).text;
+                 
+              });
+
+          </script>
+          
+          <div id="net_rank_chart" style="float: left; width: 500px;height: 400px;margin:10px;">
+              <h3 id="Influence">Network Influence Ranking</h3>
+            <p class="chat-explanation" style="height:40px;">Your overall rank for cloud collaboration influence within Microsoft ( 1 is the highest rank ).</p>  
+            <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+             <script>$(document).ready(nv.addGraph(RankChart()));</script>
+          </div>
+          
+
+          
+          
+          <div id="net_people_chart" style="float: left; width: 500px; height: 400px;margin:10px;">
+              <h3 id="Influence">People Collaboration</h3>
+              <p class="chat-explanation" style="height:40px;">Number of people who have read or edited your content in the cloud in the previous 28 days.</p>
+              <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+              <script>$(document).ready(nv.addGraph(PeopleCollabChart()));</script>
+          </div>
+          
+
+          
+          <div id="net_doc_chart" style="float: left; width: 500px;height: 400px;margin:10px;">
+              <h3 id="Influence">Document Collaboration</h3>
+              <p class="chat-explanation" style="height:40px;">Number of shared W/X/P documents you have edited in the previous 28 days.</p>
+              <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+              <script>$(document).ready(nv.addGraph(DocCollabChart()));</script>
+          </div>
+          
+          <div style="margin:10px;clear:left;">
+              <h3>Your Network Collaboration Scores</h3>
+              <table id="UserNetworkScores" class="display" cellspacing="0" width="100%">
+              </table>
+          </div>
+
+          <div style="margin:10px;margin-top:50px;">
+              <h3>People you collaborate with</h3>
+              <table id="NearestNeighborNetworkScores" class="display" cellspacing="0" width="100%"></table>
+          </div>
+          
+      </div>
+
+      <script>
+     
+          // get the target user alias
+          var alias = getParameterByName('alias');
+          if (alias.length < 1) alias = "jamescl";
+
+          // helper function to handle the badge rendering in the table
+          $.fn.dataTable.render.badge = function () {
+              return function (data, type, row) {
+                  if (type === 'display') {
+                      switch (data) {
+                          case "Diamond": return "<span class='award platinum'>&#127894;</span><span class='award-text platinum'>Platinum</span>";
+                          case "Gold": return "<span class='award gold'>&#127894;</span><span class='award-text gold'>Gold</span>";
+                          case "Silver": return "<span class='award silver'>&#127894;</span><span class='award-text silver'>Silver</span>";
+                          case "Bronze": return "<span class='award bronze'>&#127894;</span><span class='award-text bronze'>Bronze</span>";
+                          default: return "<span class='award-text'>None</span>";
+                      }
+                  }
+
+                  // Search, order and type can use the original data
+                  return data;
+              };
+          };
+
+          // draw the target user network score table
+          var base_url = 'http://hs-spades-01/table/';          
+          var sql = 'SELECT TOP 1 * FROM vwUserNetworkScores WHERE Alias=\'' + alias + '\' Order by TargetDate DESC FOR JSON PATH, INCLUDE_NULL_VALUES';
+          var url = encodeURI(base_url + sql + "?type=datatables");
+
+          $('#UserNetworkScores').DataTable({
+              ajax: {
+                  url: url,
+                  type: 'GET'
+              }
+              ,asStripeClasses: []
+              ,paging: false
+              ,ordering: false
+              ,info: false
+              ,searching:false
+              ,columns: [
+                  { data: 'Name', title: 'Name', defaultContent:"" }
+                , { data: 'Alias', title: 'Alias', defaultContent: "" }
+                , { data: 'LastBadge', title: 'Current Badge', defaultContent: "None", render: $.fn.dataTable.render.badge() }
+                , { data: 'LastScoreRank', title: 'Current Rank', render: $.fn.dataTable.render.number( ',', '.', 0), className:'dt-right'}
+                , { data: 'LastPercentileRank', title: 'Percentile', defaultContent: "", className: 'dt-right' }
+                , { data: 'NumConsecutiveWeeksHoldingCurrentBadge', title: 'Consecutive Weeks', defaultContent: "", className: 'dt-right' }
+                , { data: 'ScoreRankChangeSince7DaysAgo', title: '7d Change', render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+                , { data: 'ScoreRankChangeSince30DaysAgo', title: '30d Change', render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+
+                //, { data: 'PercentileRankChangeSince7DaysAgo', title: '7d Change', defaultContent: "" }
+                //, { data: 'PercentileRankChangeSince30DaysAgo', title: '30d Change', defaultContent: "" }
+                , { data: 'BestHistoricalBadge', title: 'Best Badge Achieved', defaultContent: "",render: $.fn.dataTable.render.badge() }
+
+                , { data: 'MinScoreRank', title: 'Highest Rank', defaultContent: "", render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+                , { data: 'MaxScoreRank', title: 'Lowest Rank', defaultContent: "", render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+                , { data: 'LastBadgeAsOf', title: ' As Of', defaultContent: "" }
+                //, { data: 'MaxPercentileRank', title: 'Highest Rank', defaultContent: "" }
+                //, { data: 'MinPercentileRank', title: 'Lowest Rank', defaultContent: "" }
+
+                //, { data: 'TargetDate', title: 'TargetDate' }
+                //, { data: 'MaxInfluenceScore', title: 'MaxInfluenceScore' }
+                //, { data: 'MinInfluenceScore', title: 'MinInfluenceScore' }
+                //, { data: 'AvgInfluenceScore', title: 'AvgInfluenceScore' }
+                //, { data: 'LastInfluenceScore', title: 'LastInfluenceScore' }
+                //, { data: 'LastInfluenceScoreAsOf', title: 'LastInfluenceScoreAsOf' }
+
+                //, { data: 'AvgScoreRank', title: 'AvgScoreRank' }
+                //, { data: 'LastScoreRankAsOf', title: 'LastScoreRankAsOf' }
+                //, { data: 'AvgPercentileRank', title: 'AvgPercentileRank' }                
+                //, { data: 'LastPercentileRankAsOf', title: 'As Of' }
+                //, { data: 'NumWeeksHoldingABadge', title: 'NumWeeksHoldingABadge' }
+                //, { data: 'NumMonthsHoldingABadge', title: 'NumMonthsHoldingABadge' }
+                //, { data: 'NumConsecutiveMonthsHoldingCurrentBadge', title: 'NumConsecutiveMonthsHoldingCurrentBadge' }
+
+              ] 
+          });
+
+          // draws the 5 nearest neighbor network score table
+          var sql = "SELECT dbo.getUserNearestNeighborNetworkScores('" + alias + "', 5)";
+          var url = encodeURI(base_url + sql + "?type=datatables");
+
+          $('#NearestNeighborNetworkScores').DataTable({
+              ajax: {
+                  url: url,
+                  type: 'GET'
+              }
+             , asStripeClasses: []
+             , paging: false
+             , ordering: false
+             , info: false
+             , searching: false
+             , columns: [
+                  { data: 'Name', title: 'Name', defaultContent: "" }
+                , { data: 'Alias', title: 'Alias', defaultContent: "" , render: function ( data, type, row, meta ) {
+                    return "<a href='/static/james.html?alias=" + data + "'>" + data + '</a>';}}
+                , { data: 'LastBadge', title: 'Current Badge', render: $.fn.dataTable.render.badge() }
+                , { data: 'LastScoreRank', title: 'Current Rank', render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+                , { data: 'LastPercentileRank', title: 'Percentile', render: $.fn.dataTable.render.number(',', '.', 0), defaultContent: "", className: 'dt-right' }
+                , { data: 'NumConsecutiveWeeksHoldingCurrentBadge', title: 'Consecutive Weeks', render: $.fn.dataTable.render.number(',', '.', 0), defaultContent: "", className: 'dt-right' }
+                , { data: 'ScoreRankChangeSince7DaysAgo', title: '7d Change', render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+                , { data: 'ScoreRankChangeSince30DaysAgo', title: '30d Change', render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+
+                //, { data: 'PercentileRankChangeSince7DaysAgo', title: '7d Change', defaultContent: "" }
+                //, { data: 'PercentileRankChangeSince30DaysAgo', title: '30d Change', defaultContent: "" }
+                , { data: 'BestHistoricalBadge', title: 'Best Badge Achieved', defaultContent: "", render: $.fn.dataTable.render.badge() }
+                , { data: 'MinScoreRank', title: 'Highest Rank', defaultContent: "", render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+                , { data: 'MaxScoreRank', title: 'Lowest Rank', defaultContent: "", render: $.fn.dataTable.render.number(',', '.', 0), className: 'dt-right' }
+                , { data: 'LastBadgeAsOf', title: ' As Of', defaultContent: "" }
+                //, { data: 'MaxPercentileRank', title: 'Highest Rank', defaultContent: "" }
+                //, { data: 'MinPercentileRank', title: 'Lowest Rank', defaultContent: "" }
+
+                //, { data: 'TargetDate', title: 'TargetDate' }
+                //, { data: 'MaxInfluenceScore', title: 'MaxInfluenceScore' }
+                //, { data: 'MinInfluenceScore', title: 'MinInfluenceScore' }
+                //, { data: 'AvgInfluenceScore', title: 'AvgInfluenceScore' }
+                //, { data: 'LastInfluenceScore', title: 'LastInfluenceScore' }
+                //, { data: 'LastInfluenceScoreAsOf', title: 'LastInfluenceScoreAsOf' }
+
+                //, { data: 'AvgScoreRank', title: 'AvgScoreRank' }
+                //, { data: 'LastScoreRankAsOf', title: 'LastScoreRankAsOf' }
+                //, { data: 'AvgPercentileRank', title: 'AvgPercentileRank' }                
+                //, { data: 'LastPercentileRankAsOf', title: 'As Of' }
+                //, { data: 'NumWeeksHoldingABadge', title: 'NumWeeksHoldingABadge' }
+                //, { data: 'NumMonthsHoldingABadge', title: 'NumMonthsHoldingABadge' }
+                //, { data: 'NumConsecutiveMonthsHoldingCurrentBadge', title: 'NumConsecutiveMonthsHoldingCurrentBadge' }
+
+             ]
+          });
+
+      </script>
+    </body>
+</html>	

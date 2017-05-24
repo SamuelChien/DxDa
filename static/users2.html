@@ -1,0 +1,282 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Usage Logs</title>
+	<link rel="shortcut icon" href="/static/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+		
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+  
+  </head>
+  <body>
+       
+        <script>
+            
+            // retrieve target user information
+            function getParameterByName(name) {
+                name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                    results = regex.exec(location.search);
+                return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            }
+
+            var alias = getParameterByName('alias');
+
+
+            // default chart dimensions
+            var width = 600, height = 250;
+
+
+            // helper function for getting json data
+            var getJsonData = function (url) {
+                var json = null;
+
+                $.ajax({
+                    'async': false,
+                    'global': false,
+                    'url': url,
+                    'type': 'GET',
+                    'dataType': "text",
+                    'success': function (data) { json = data; }
+                });
+                return $.parseJSON(json);
+            };
+
+
+            // helper function for getting data for a single data series
+            var getDataForChartSeries = function (sql, seriesName, color) {
+
+                var base_url = 'http://hs-spades-01/table/';
+                var url = '';
+
+                if (sql.length < 1) return;
+                if (seriesName.length < 1) seriesName = "";
+                if (color.length < 1) color = "#4286f4";
+
+                var series1 = new Array();
+                series1.key = seriesName;
+                url = encodeURI(base_url + sql);
+                series1.values = getJsonData(url);
+                series1.color = color;
+
+                var dataArray = new Array();
+                dataArray.push(series1);
+
+                return dataArray;
+            }
+
+
+
+            // draws the people chart
+            var PeopleCollabChart = function () {               
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, 100])
+                    //.width(width)
+                    .height(height)
+                    .useInteractiveGuideline(true)
+                    .showControls(false)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format('%b %e')(new Date(d)) })
+//                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('People who accessed your content')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+                d3.select('#net_people_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = 'SELECT Date, COUNT(*) AS Y FROM [vDailyLogTable3] GROUP BY Date ORDER BY Date FOR JSON PATH';
+                        var alias = getParameterByName('alias');
+                        //alert(alias);
+                        if (alias.length > 1) 
+                          sql = 'SELECT Date, COUNT(*) AS Y FROM [vDailyLogTable3] WHERE (consoleuser = \''+alias.toLowerCase()+'\' OR alias = \''+alias.toLowerCase()+'\') GROUP BY Date ORDER BY Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "Page views", "#2CA02C");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+            // draws the document chart
+            var DocCollabChart = function () {
+
+                var chart = nv.models.stackedAreaChart()
+
+                    .x(function (d) { return new Date(d.Date).getTime() })
+                    .y(function (d) { return d.Y })
+                    .margin({ top: 30, right: 20, bottom: 30, left: 50 })
+                    .forceY([0, ])
+                    //.width(width)
+                    .height(height)
+                    .showControls(false)
+                    .useInteractiveGuideline(true)
+                    .noData("There is no data to display.")
+                ;
+
+                chart.xAxis
+                    //.axisLabel('Date')
+                    .rotateLabels(-45)
+                    .showMaxMin(false)
+                    .tickFormat(function (d) { return d3.time.format("%b %e")(new Date(d)) })
+//                    .tickValues(d3.time.saturday.range(new Date("11/1/2016"), new Date("4/22/2017"), 1))
+                ;
+
+                chart.xScale(d3.time.scale());
+
+                chart.yAxis
+                    //.axisLabel('Shared WXP Documents Edited')
+                    .showMaxMin(false)
+                    .tickFormat(d3.format('d'));
+
+                d3.select('#net_doc_chart svg')
+                    .datum(function () {
+                        var app = 'WXP';
+                        var sql = 'SELECT Date, COUNT(DISTINCT consoleuser) AS Y FROM [vDailyLogTable3] GROUP BY Date ORDER BY Date FOR JSON PATH';
+                        var alias = getParameterByName('alias');
+                        //alert(alias);
+                        if (alias.length > 1) 
+                          sql = 'SELECT Date, COUNT(DISTINCT consoleuser) AS Y FROM [vDailyLogTable3] WHERE (consoleuser = \''+alias.toLowerCase()+'\' OR alias = \''+alias.toLowerCase()+'\') GROUP BY Date ORDER BY Date FOR JSON PATH';
+                        return getDataForChartSeries(sql, "Users", "#f4c242");
+                    })
+                    .transition().duration(500)
+                    .style({ 'height': height + 50 })
+                    .call(chart)
+                ;
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            };
+
+        </script>
+
+
+
+      <div style="margin:0px;padding:0px;">
+          
+
+		 
+		 
+          <!-- Network Charts --> 
+          <table>
+		  <tr>
+			  <td>
+			  <div id="net_people_chart" style="float: left; width: 500px; height: 400px;margin:10px;">
+				  <h3 id="Influence">Page views</h3>
+				  <p class="chat-explanation" style="height:40px;">Number of page views in last 28 days.</p>
+				  <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+				  <script>$(document).ready(nv.addGraph(PeopleCollabChart()));</script>
+			  </div>
+			  </td>
+			<td>
+			  
+			  <div id="net_doc_chart" style="float: left; width: 500px;height: 400px;margin:10px;">
+				  <h3 id="Influence">Unique Users</h3>
+				  <p class="chat-explanation" style="height:40px;">Number of unique users in last 28 days.</p>
+				  <svg style="margin-top:10px;margin-bottom:10px;"></svg>
+				  <script>$(document).ready(nv.addGraph(DocCollabChart()));</script>
+			  </div>
+			  
+			  </td>
+			  </tr>
+		  </table>
+          
+
+          <!-- Network Badge Legend and Recommendation --> 
+            <!-- Network Tables --> 
+            <div ">
+              
+              <h3 style="margin-top:40px;">Top users</h3>
+              <table id="TopInsightsUsers" class="display compact" cellspacing="0" width="100%"></table>
+              <h3 style="margin-top:40px;">Top viewed profiles</h3>
+              <table id="TopInsightsProfiles" class="display compact" cellspacing="0" width="100%"></table>
+
+               <script>
+
+                  // get the target user alias
+            var alias = getParameterByName('alias');
+
+                  // draw the target user network score table
+                  var base_url = 'http://hs-spades-01/table/';
+
+
+                  // draws the 5 nearest neighbor network score table
+              var sql = "SELECT consoleuser AS Alias, COUNT(*) AS PageViews, MAX(request_time) AS LastAccessedAt FROM dbo.LogTable3 WHERE consoleuser != 'consoleuser' AND request_time > '2017-04-25' GROUP BY consoleuser ORDER BY PageViews desc FOR JSON PATH";;
+              if (alias.length > 1) 
+                sql = "SELECT consoleuser AS Alias, COUNT(*) AS PageViews, MAX(request_time) AS LastAccessedAt FROM dbo.LogTable3 WHERE (consoleuser = '"+alias+"' OR alias = '"+alias+"') AND request_time > '2017-04-25' GROUP BY consoleuser ORDER BY PageViews desc FOR JSON PATH";
+                  var url = encodeURI(base_url + sql + "?type=datatables");
+                  $('#TopInsightsUsers').DataTable({
+                      ajax: {
+                          url: url,
+                          type: 'GET'
+                      }
+                      ,ordering: true
+                      ,"order": [[ 1, "desc" ]]
+                     , columns: [
+                         { data: 'Alias', title: 'Alias', defaultContent: "" , render: function ( data, type, row, meta ) {
+                            return "<a target='_new' href='/static/users2.html?alias=" + data + "'>" + data + '</a>';}}
+                        , { data: 'PageViews', title: 'Total Page Views' }
+                        , { data: 'LastAccessedAt', title: 'Last Accessed At' }
+
+                     ]
+                  });
+
+                  // draws the 5 nearest neighbor network score table
+                var sql = "SELECT Alias AS Alias, COUNT(*) AS PageViews, MAX(request_time) AS LastAccessedAt FROM dbo.LogTable3 WHERE consoleuser != 'consoleuser' AND request_time > '2017-04-25' GROUP BY Alias ORDER BY PageViews desc FOR JSON PATH";
+                if (alias.length > 1) 
+                  sql = "SELECT Alias AS Alias, COUNT(*) AS PageViews, MAX(request_time) AS LastAccessedAt FROM dbo.LogTable3 WHERE (consoleuser = '"+alias+"' OR alias = '"+alias+"') AND request_time > '2017-04-25' GROUP BY Alias ORDER BY PageViews desc FOR JSON PATH";
+                  var url = encodeURI(base_url + sql + "?type=datatables");
+                  $('#TopInsightsProfiles').DataTable({
+                      ajax: {
+                          url: url,
+                          type: 'GET'
+                      }
+                      ,ordering: true
+                      ,"order": [[ 1, "desc" ]]
+                     , columns: [
+                         { data: 'Alias', title: 'Alias', defaultContent: "" , render: function ( data, type, row, meta ) {
+                            return "<a target='_new' href='/user/?alias=" + data + "'>" + data + '</a>';}}
+                        , { data: 'PageViews', title: 'Total Page Views' }
+                        , { data: 'LastAccessedAt', title: 'Last Accessed At' }
+
+                     ]
+                  });
+
+                </script>
+          </div>
+          
+      </div>
+
+      
+    </body>
+</html>	

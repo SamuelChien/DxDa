@@ -1,0 +1,103 @@
+{% extends 'include/basic.html' %} 
+{% block 'body' %}
+
+<div class="container-fluid">
+  <div class="row">
+	<div class="col-sm-3 col-md-2 sidebar">
+	  <center><img src="https://docs.moodle.org/27/en/images_en/7/7c/F1.png" class="img-responsive" alt="user" id="profilePic"></center><br>
+	  <ul class="nav nav-sidebar">
+		<li class="active"><a href="#table">Table example<span class="sr-only">(current)</span></a></li>
+		<li><a href="#graph">Graph example</a></li>
+		<li><a href="#Feature3">Feature 3</a></li>
+	  </ul>		  
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+		<h1>Add-ins</h1>
+		<p1>Example of how to access the database to display a dynamic table or a graph.</p>
+	
+		<h1 id="#table">Table example</h1>
+		<div class="table-responsive">
+			<table id="tableexample" class="display" cellspacing="0" width="100%">
+			  <thead>
+				<tr>
+				  <th>TenantId</th>
+				  <th>Tenant Name</th>
+				  <th>Country</th>
+				  <th>FunnelStatus</th>
+				  <th>CloudEnabledUsers</th>
+				  <th>WXPCloudCoauthors</th>
+				</tr>
+			  </thead>
+			  <tbody>
+			  </tbody>
+			</table>
+		</div>		  
+		<hr/>
+		
+		<h1 id="#graph">Graph example</h1>
+		<div id="chart1">
+		  <svg></svg>
+		</div>
+		<hr/>
+
+	</div>
+	
+  </div>
+</div>		
+	
+<script type="text/javascript" language="javascript">
+// Table example
+$(document).ready(function() {
+	$('#tableexample').DataTable( {
+		ajax: {
+			url: "http://hs-spades-01/table/SELECT%20%2A%20FROM%20vwEnterpriseTenants%20FOR%20JSON%20PATH;?type=datatables",
+			type: 'GET'
+		},
+		columns: [
+			{ data: "TenantId", 
+			render: function(data, type) {return '<a href="http://hs-spades-01/static/tenant.html?TenantId=' + data + '">"' + data + '"</a>';} },
+			{ data: "OrgName" },
+			{ data: "CountryCode" },
+			{ data: "FunnelStatus" },
+			{ data: "CloudEnabledUsers" },
+			{ data: "WXPCloudCoauthors" }
+		]
+	})
+});
+
+</script>
+<script>
+// Chart example
+var url = "http://hs-spades-01/table/UserInfluenceScores/Puid/10033FFF8006C468/?type=nvd3&top=5&sort=TargetDate"
+d3.json(url, 
+function(data) {
+  nv.addGraph(function() {
+    var chart = nv.models.discreteBarChart()
+            .x(function(d) { return d.AppName })
+            .y(function(d) { return d.ScoreRank })
+			.margin({top: 30, right: 20, bottom: 50, left: 100})
+			.showValues(true);
+
+    chart.xAxis
+        .axisLabel("My App")
+
+    chart.yAxis
+        .axisLabel("Score rank (#)")
+        .tickFormat(d3.format(',.0f'));
+
+    d3.select('#chart1 svg')
+		.attr("height", 400)
+        .datum(data)
+		.transition()
+		.duration(500)
+        .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+});
+</script>
+
+{% endblock %}

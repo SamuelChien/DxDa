@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/css/d3.slider.css" />
+<style>
+    body {
+        font: 13px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .dot {
+        stroke: #000;
+    }
+    
+    #filter {
+        padding-left: 100px;
+    }
+
+    .tooltip {
+        position: absolute;
+        width: 320px;
+        height: 350px;
+        pointer-events: auto;
+        border: 1px solid;
+        padding: 2px;
+        max-width: 450px;
+        color: black;
+        text-align: left;
+        background-color: white;
+        background: white;
+        opacity: 1.0;
+        filter: alpha(opacity=100);    
+    }
+
+    input[type=range] {
+        -webkit-appearance: none;
+        margin: 20px 0;
+        width: 50%;
+    }
+
+    input[type=range]::-ms-fill-lower {
+        background: #2a6495;
+        border: 0.2px solid #010101;
+        border-radius: 2.6px;
+        box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+    }
+
+    input[type=range]::-ms-fill-upper {
+        background: #3071a9;
+        border: 0.2px solid #010101;
+        border-radius: 2.6px;
+        box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+    }
+
+    input[type=range]::-ms-thumb {
+        box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+        border: 1px solid #000000;
+        height: 16px;
+        width: 16px;
+        border-radius: 3px;
+        background: #ffffff;
+        cursor: pointer;
+    }
+
+</style>
+
+<body>
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="/js/d3.slider.js"></script>
+    <script>   
+        var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 1300 - margin.left - margin.right,
+            height = 600 - margin.top - margin.bottom;
+
+        var xValue = function (d) { return d.V1; }, // initialize X scale 
+            x = d3.scale.linear().range([0, width]);
+
+        var yValue = function (d) { return d.V2; }, // initialize Y scale 
+            y = d3.scale.linear().range([height, 0]);
+
+        var color = d3.scale.category10(); // setup color
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        var svg = d3.select("body").append("svg")  // svg area to be drawn 
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // add the tooltip area to the webpage
+        var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        // reading the data
+        d3.tsv("Tenants_tSNE.tsv", function (error, data) {
+            data.forEach(function (d) { d.V1 = +d.V1; d.V2 = +d.V2; });
+
+            // don't want dots overlapping axis, so add in buffer to data domain
+            x.domain([d3.min(data, xValue) - 0.1, d3.max(data, xValue) + 0.3]);
+            y.domain([d3.min(data, yValue) - 0.1, d3.max(data, yValue) + 0.1]);
+            
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis)
+                .append("text")
+                .attr("class", "label")
+                .attr("x", width)
+                .attr("y", -6)
+                .style("text-anchor", "end")
+                .text("Dimension 1");
+
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .append("text")
+                .attr("class", "label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Dimension 2");
+
+            var circles = svg.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("r", 3.5)
+                .attr("cx", function (d) { return x(d.V1); })
+                .attr("cy", function (d) { return y(d.V2); })
+                .style("fill", function (d) { return color(d.Legend4); })
+                // function for mouseover
+                .on("mouseover", function (d) {
+                    tooltip.transition()
+                    .duration(1200)
+                    .style("opacity", 1.0);
+                    // build tooltip message body
+                    tooltip.html(//"Name:       " + d["OrgName"] + "<br/> " +
+                        '<a href="http://hs-spades-01/static/tenant.html?TenantId=' + d["TenantId"] + '" target="_blank">' + d["OrgName"] + "</a><br/>" +
+                        "TenantId: " + d["TenantId"] + "<br/>" +
+                        "Total Users: " + d["TotalUsers"] + "<br/>" +
+                        "EXOEnabled Users: " + d["EXOEnabledUsers"] + "<br/>" +
+                        "SPOEnabled Users: " + d["SPOEnabledUsers"] + "<br/>" +
+                        "CloudEnabledUsers: " + d["CloudEnabledUsers"] + "<br/>" +	
+                        "CloudActiveUsers: " + d["CloudActiveUsers"] + "<br/>" +	
+                        "WXPCloudUsers: " + d["WXPCloudUsers"] + "<br/>" +	
+                        "WXPCloudCollaborators: " + d["WXPCloudCollaborators"] + "<br/>" +	
+                        "WXPCloudContributors: " + d["WXPCloudContributors"] + "<br/>" +	
+                        "WXPCloudCoauthors: " + d["WXPCloudCoauthors"] + "<br/>" +	
+                        "TotalMailUsers: " + d["TotalMailUsers"] + "<br/>" +	
+                        "TotalAttachments: " + d["TotalAttachments"] + "<br/>" +	
+                        "UsersSentAttachment: " + d["UsersSentAttachment"] + "<br/>" +	
+                        "OWAMailUsers: " + d["OWAMailUsers"] + "<br/>" +	
+                        "TotalOWAMails: " + d["TotalOWAMails"] + "<br/>" +	
+                        "TotalGoogleLinks: " + d["TotalGoogleLinks"] + "<br/>" +	
+                        "UsersSentGoogleLink: " + d["UsersSentGoogleLink"] + "<br/>" +	
+                        "TotalSPOLinks: " + d["TotalSPOLinks"] + "<br/>" +	
+                        "UsersSentSPOLink: " + d["UsersSentSPOLink"] + "<br/>" +	
+                        "GoogleAddinDevices: " + d["GoogleAddinDevices"] + "<br/>" +	
+                        "GoogleAddinUsers: " + d["GoogleAddinUsers"] + "<br/>" 
+                    )
+                    // show tooltip by the mouse
+                    .style("left", (d3.event.pageX + 5) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+                }) // mouseover function end
+                .on("mouseout", function (d) {
+                    tooltip.transition()
+                    .duration(5000)
+                    .style("opacity", 0);
+                }); // mouseout 
+
+            // upper right corner legend
+            var legend = svg.selectAll(".legend")
+                .data(color.domain())
+                .enter().append("g")
+                .attr("class", "legend")
+                .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+            legend.append("rect")
+                .attr("x", width - 18)
+                .attr("width", 18)
+                .attr("height", 18)
+                .style("fill", color);
+            legend.append("text")
+                .attr("x", width - 24)
+                .attr("y", 9)
+                .attr("dy", ".35em")
+                .style("text-anchor", "end")
+                .text(function(d) { return d; });
+
+            // selectable legend
+            d3.selectAll("[name=v]").on("change", function () {
+                var selected = this.value;
+                display = this.checked ? "inline" : "none";
+                console.log(this.value)
+                svg.selectAll(".dot")
+                //.filter(function (d) { return (parseInt(d.TotalUsers) > parseInt(TenantSzId.value)); })
+                .attr("display", display);
+            });
+
+            // slide bar filter 1
+            d3.selectAll("[name=TenantSzMin]").on("change", function () {
+                var selected = this.value;
+                console.log(selected)
+                svg.selectAll(".dot")
+               .attr("display", function (d) {
+                   if (parseInt(d.TotalUsersNew) >= parseInt(TenantSzMinOutputId.value) &&
+                       parseInt(d.TotalUsersNew) <= parseInt(TenantSzMaxOutputId.value)) return "inline"; else return "none"
+               });
+            });
+
+            // slide bar filter 2 
+            d3.selectAll("[name=TenantSzMax]").on("change", function () {
+                var selected = this.value;
+                console.log(selected)
+                svg.selectAll(".dot")
+               .attr("display", function (d) {
+                   if (parseInt(d.TotalUsersNew) >= parseInt(TenantSzMinOutputId.value)
+                       && parseInt(d.TotalUsersNew) <= parseInt(TenantSzMaxOutputId.value)) return "inline"; else return "none"
+               });
+            });
+
+            //d3.select('#slider2').call(d3.slider().value([10, 25]));
+            d3.select('#slider3').call(d3.slider().axis(true).value( [ 10, 25 ] ).on("slide", function(evt, value) {
+                d3.select('#slider3textmin').text(value[ 0 ]);
+                d3.select('#slider3textmax').text(value[ 1 ]);
+            }));
+        });
+    </script>
+
+    <div id="filterNew">
+        <b>Tenant Filter:</b>
+        <br>
+        <input name="v" value="Others" type="checkbox" checked>Others</input>
+        <br>
+        <input name='v' value="Sent Google links" type="checkbox" checked>Sent Google links</input>
+        <br>
+        <input name="v" value="Have Google Addin" type="checkbox" checked>Have Google Addin</input>
+    </div>
+    <!--<b>Tenant Size >= </b>-->
+    <div style="font-size:14px;font-family:sans-serif" id="sliderMin">
+        Size of tenants >=
+        <input name="TenantSzMin" id="TenantSzMinId" style="position:relative;top:4px;" type="range" min="5.5214609179" max="12.611537754" value="5.5214609179" step="0.001"
+               oninput="TenantSzMinOutputId.value = parseInt(Math.pow(2.71828183, parseFloat(TenantSzMinId.value)))">
+        <output name="TenantSzMinOutput" id="TenantSzMinOutputId">250</output>
+    </div>
+    <!--<b>Tenant Size <= </b>-->
+    <div style="font-size:14px;font-family:sans-serif" id="sliderMax">
+        Size of tenants <= 
+        <input name="TenantSzMax" id="TenantSzMaxId" style="position:relative;top:4px;" type="range" min="5.5214609179" max="12.611537754" value="12.611537754" step="0.001"
+               oninput="TenantSzMaxOutputId.value = parseInt(Math.pow(2.71828183, parseFloat(TenantSzMaxId.value)))">
+        <output name="TenantSzMaxOutput" id="TenantSzMaxOutputId">300000</output>
+    </div>
+    <!--<h3>Tenant Size - two ways</h3>
+    <div id="slider3"></div>-->
+</body>

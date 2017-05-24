@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+        <script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+
+    <script src="http://d3js.org/d3.v3.min.js" language="JavaScript"></script>
+    <script src="liquidfillgauge.js" language="JavaScript"></script>
+</head>
+<body>
+
+<script>
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// setup x 
+var xValue = function(d) { return d.Xcoord;}, // data -> value
+    xScale = d3.scale.linear().range([0, width]), // value -> display
+    xMap = function(d) { return xScale(xValue(d));}, // data -> display
+    xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+// setup y
+var yValue = function(d) { return d.Ycoord;}, // data -> value
+    yScale = d3.scale.linear().range([height, 0]), // value -> display
+    yMap = function(d) { return yScale(yValue(d));}, // data -> display
+    yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+// setup fill color
+var cValue = function(d) { return d.GoogleAddinUsers>0;},
+    color = d3.scale.category10();
+
+var CloudUsers = function(d) { return d.WXPCloudUsers;};
+var MailUsers = function(d) { return d.TotalMailUsers;};
+var NUsers = function(d) { return d.TotalUsers;};
+
+// add the graph canvas to the body of the webpage
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// add the tooltip area to the webpage
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+	
+var url = "http://hs-spades-01/table/TenantsWith250PlusUsers/";
+d3.json(url, 
+function(data) {
+ data.forEach(function(d) {
+ //d.Xcoord = +d.Xcoord;
+     //d.Ycoord = +d.Ycoord;
+     d.Xcoord = +d.SPOEnabledUsers;
+     d.Ycoord = +d.WXPCloudCoauthors;
+ d.GoogleAddinUsers = +d.GoogleAddinUsers;
+ d.UsersSentGoogleLink = +d.UsersSentGoogleLink;
+ d.WXPCloudUsers       = +d.WXPCloudUsers;
+ d.TotalMailUsers      = +d.TotalMailUsers;
+ d.TotalUsers          = +d.TotalUsers;
+ d.OWAMailUsers        = +d.OWAMailUsers;
+ });
+
+  xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+  yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+
+  // x-axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Dimension 1");
+
+  // y-axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Dimension 2");
+
+  // draw dots
+  svg.selectAll(".dot")
+      .data(data)
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", xMap)
+      .attr("cy", yMap)
+      .style("fill", function(d) { return color(cValue(d));}) 
+      .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+          tooltip.html('<a href="http://hs-spades-01/static/tenant.html?TenantId=' + d["TenantId"] + '">' + d["OrgName"] + "</a><br/>"
+		    + "<br/>OrgName2= "+d["OrgName"]+"<br/> (Email Users= " + MailUsers(d) 
+	        + ", Total Users= " + NUsers(d) + ", Cloud Users=" + CloudUsers(d)+")")
+               .style("left", (d3.event.pageX + 5) + "px")
+               .style("top", (d3.event.pageY - 30) + "px");
+		  console.log('<a href="http://tenants/#/details/'+d["TenantId"]+'">');
+      })
+      //.on("mouseout", function(d) {
+        //  tooltip.transition()
+          //     .duration(500)
+            //   .style("opacity", 0);
+      //});
+});
+</script>
+
+
+</body>
+</html>

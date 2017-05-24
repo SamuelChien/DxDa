@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>User Profile</title>
+	<link rel="shortcut icon" href="/static/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	<link rel="stylesheet" type="text/css" href="//getbootstrap.com/examples/dashboard/dashboard.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+  </head>
+  <body>
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <img src="http://hs-spades-01/static/images/ods%20logo.png" class="img-responsive" alt="user">
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            
+			<li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+		  <center><h1><color="#FF0000">Hack 2017</color></h1></center>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+		  <center><img src="https://docs.moodle.org/27/en/images_en/7/7c/F1.png" class="img-responsive" alt="user"></center><br>
+		  <center><img src="http://who/Photos/jhoegger.jpg" class="img-responsive" alt="user"></center><br>
+		  
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#overview">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#expertise">Expertise Level</a></li>
+            <li><a href="#chart">Expertise chart</a></li>
+            <li><a href="#network">My Network</a></li>
+            <li><a href="#">More Stuff</a></li>
+			<h1 id="username"></h1>
+
+          </ul>
+		  
+        </div>
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  	      <h2 id="overview">Overview</h2>
+		  <div id="overviewDiv"></div>
+		  <br><br><br><br><br><br>
+
+  	      <h2 id="expertise">Expertise Level</h2>
+		  <div class="table-responsive">
+            <table id="Table1" class="display" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+				  <th>Alias</th>
+				  <th>UserId</th>
+				  <th>Word</th>
+				  <th>Excel</th>
+				  <th>PowerPoint</th>
+				</tr>
+              </thead>
+              <tbody>
+              </tbody>
+			</table>
+		  </div>
+
+		  <hr/>
+  	      <h2 id="chart">Expertise Chart</h2>
+		  <div id="chart1">
+			<svg></svg>
+		  </div>
+
+        </div>
+  	  </div>
+	</div>
+	
+	<script type="text/javascript" language="javascript">
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+$(document).ready(function() {
+	var alias = getParameterByName('alias');
+	var username = <%HttpContext.Current.User.Identity.Name %>;
+	if (alias.length<1) alias=username;
+
+	$('#overview').html("Overview for " + alias);
+	url = "http://hs-spades-01/table/UserProficiencyScores/Alias/" + alias;
+	$.getJSON(url, function(data) {
+		d = data[0];
+		s = "Congratulations, " + d.Alias + "! You are level " + d.PowerPoint + " in PowerPoint";
+		$('#overviewDiv').html(s)
+	})
+	
+    $( "#username" ).load( "/username.php" );	
+	
+	$('#Table1').DataTable( {
+			ajax: {
+				url: "http://hs-spades-01/table/UserProficiencyScores/Alias/" + alias + "/?type=datatables",
+				type: 'GET'
+			},
+		    columns: [
+				{ data: "Alias" },
+				{ data: "UserId" },
+				{ data: "Word" },
+				{ data: "Excel" },
+				{ data: "PowerPoint" }
+			]
+		})
+		});
+	
+	
+	</script>
+<script>
+
+var url = "http://hs-spades-01/table/UserInfluenceScores/Puid/10033FFF8006C468/?type=nvd3"
+d3.json(url, 
+function(data) {
+  nv.addGraph(function() {
+    var chart = nv.models.discreteBarChart()
+            .x(function(d) { return d.AppName })
+            .y(function(d) { return d.ScoreRank })
+			.margin({top: 30, right: 20, bottom: 50, left: 100})
+			.showValues(true);
+
+    chart.xAxis
+        .axisLabel("My App")
+
+    chart.yAxis
+        .axisLabel("Score rank (#)")
+        .tickFormat(d3.format(',.0f'));
+
+    d3.select('#chart1 svg')
+		.attr("height", 400)
+        .datum(data)
+		.transition()
+		.duration(500)
+        .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+});
+</script>
+</body>
+</html>	

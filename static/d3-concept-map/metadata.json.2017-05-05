@@ -1,0 +1,180 @@
+{
+    "ditems": [
+        {
+            "type": "ditem",
+            "name": "WordDoc1",
+            "ditem": 1,
+            "links": [
+               "toreli",
+                "ruih",
+                "jhoegger",
+                "myboss",
+                "ceo"
+            ]
+        },
+        {
+            "type": "ditem",
+            "name": "WordDoc2",
+            "ditem": 2,
+            "links": [
+               "toreli",
+                "ruih",
+                "jhoegger"
+            ]
+        },
+        {
+            "type": "ditem",
+            "name": "PPT1",
+            "ditem": 3,
+            "links": [
+                "jhoegger",
+                "myboss",
+                "ceo"
+            ]
+        }
+    ],
+    "themes": [
+        {
+            "type": "theme",
+            "name": "toreli"
+        },
+        {
+            "type": "theme",
+            "name": "ruih"
+        },
+        {
+            "type": "theme",
+            "name": "jhoegger"
+        },
+        {
+            "type": "theme",
+            "name": "myboss"
+        },
+        {
+            "type": "theme",
+            "name": "ceo"
+        }
+    ],
+    "perspectives": [
+        {
+            "type": "perspective",
+            "name": "Biocentric",
+            "description": "To varying degrees, these conversations treat human life as having <a href=\"http://en.wikipedia.org/wiki/Biocentrism_%28ethics%29\">similar or equal moral weight</a> to other life. We are also including broader-than-life value sources like <a href=\"http://en.wikipedia.org/wiki/Ecocentrism\">ecocentrism</a> in this category. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#anthropocentric\">anthropocentric</a>.",
+            "slug": "biocentric-value-source",
+            "count": "10",
+            "group": "281"
+        },
+        {
+            "type": "perspective",
+            "name": "Anthropocentric",
+            "description": "To varying degrees, these conversations treat human life as having <a href=\"http://en.wikipedia.org/wiki/Anthropocentrism\">greater moral weight</a> than other life. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#biocentric\">biocentric</a>.",
+            "slug": "anthropocentric-value-source",
+            "count": "26",
+            "group": "281"
+        },
+        {
+            "type": "perspective",
+            "name": "Collectivist",
+            "description": "Every society attempts to balance individual freedom with collective good. These ditems feature conversations that suggest we have slid too far towards individualism and need to move towards the group. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#individualist\">individualist</a>.",
+            "slug": "collectivist",
+            "count": "21",
+            "group": "284"
+        },
+        {
+            "type": "perspective",
+            "name": "Individualist",
+            "description": "Every society attempts to balance personal freedom with collective good. These ditems feature conversations that suggest we have slid too far towards collectivism and need to push towards individualism. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#collectivist\">collectivist</a>.",
+            "slug": "individualist",
+            "count": "9",
+            "group": "284"
+        },
+        {
+            "type": "perspective",
+            "name": "Centralized",
+            "description": "These ditems feature interviewees who feel the problems they are discussing can be better addressed through centralized systems than localized ones. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#localized\">localized</a>.",
+            "slug": "centralized",
+            "count": "11",
+            "group": "287"
+        },
+        {
+            "type": "perspective",
+            "name": "Localized",
+            "description": "These ditems feature interviewees who feel the problems they are discussing can be better addressed through localized systems than centralized ones. Antonym: <a>centralized</a>.",
+            "slug": "localized",
+            "count": "22",
+            "group": "287"
+        },
+        {
+            "type": "perspective",
+            "name": "Dualist",
+            "description": "These conversations contain suggestions that reality is composed of <a href=\"http://plato.stanford.edu/entries/dualism/\">more than physical material</a>, whether mind, soul, spirit, etc. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#physicalist\">physicalist</a>.",
+            "slug": "dualist",
+            "count": "17",
+            "group": "290"
+        },
+        {
+            "type": "perspective",
+            "name": "Physicalist",
+            "description": "These conversations contain suggestions that reality is composed entirely of <a href=\"http://plato.stanford.edu/entries/physicalism/\">physical elements</a>, typically (but not inherently) knowable and measurable. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#dualist\">dualist</a>.",
+            "slug": "physicalist-2",
+            "count": "15",
+            "group": "290"
+        },
+        {
+            "type": "perspective",
+            "name": "Objectivist",
+            "description": "These conversations include a diverse array of thinkers who seem to suggest that there is an ultimately <a href=\"http://en.wikipedia.org/wiki/Objectivity_%28philosophy%29\">knowable reality</a> unaffected by our perception. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#subjectivist\">subjectivist</a>.",
+            "slug": "objectivist",
+            "count": "17",
+            "group": "306"
+        },
+        {
+            "type": "perspective",
+            "name": "Subjectivist",
+            "description": "These conversations include a diverse array of thinkers who seem to suggest that <a href=\"http://en.wikipedia.org/wiki/Subjectivist\">each person experiences an independent reality</a> and that an external, objective reality is either unknowable or nonexistent. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#objectivist\">objectivist</a>.",
+            "slug": "subjectivist",
+            "count": "16",
+            "group": "306"
+        },
+        {
+            "type": "perspective",
+            "name": "Determinism",
+            "description": "Episodes in this category include perspectives ranging from strict <a href=\"http://plato.stanford.edu/entries/determinism-causal/\">determinism</a> to determinism tempered by free will. Determinism is a broad category and includes the sense that human actions are largely shaped by the <a href=\"http://en.wikipedia.org/wiki/Environmental_determinism\">environment</a>, <a href=\"http://en.wikipedia.org/wiki/Technological_determinism\">technology</a>, a divine plan, etc. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#free-will\">free will</a>.",
+            "slug": "determinism",
+            "count": "3",
+            "group": "1259"
+        },
+        {
+            "type": "perspective",
+            "name": "Free Will",
+            "description": "Episodes in this category include lean towards attributing human behavior to <a href=\"http://plato.stanford.edu/entries/freewill/\">free will</a>. Human agency may be influenced by larger systems (environmental, technological, atomic, divine), but it is not a prisoner to them. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#determinism\">determinism</a>.",
+            "slug": "free-will",
+            "count": "25",
+            "group": "1259"
+        },
+        {
+            "type": "perspective",
+            "name": "Biological Continuity",
+            "description": "Personal identity over time stems from <a href=\"http://plato.stanford.edu/entries/identity-personal/#SomApp\">physical continuity</a>. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#psychological-continuity\">psychological continuity</a>.",
+            "slug": "biology-personal-identity",
+            "count": "6",
+            "group": "1261"
+        },
+        {
+            "type": "perspective",
+            "name": "Psychological Continuity",
+            "description": "Personal identity over time stems from <a href=\"http://plato.stanford.edu/entries/identity-personal/#PsyApp\">psychological continuity</a>. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#biological-continuity\">biological continuity</a>.",
+            "slug": "psychology-personal-identity",
+            "count": "4",
+            "group": "1261"
+        },
+        {
+            "type": "perspective",
+            "name": "Intrinsic",
+            "description": "Value is intrinsic to things, whether people, animals, or inanimate objects. Antonym: <a href=\"http://www.findtheconversation.com/concept-map/#extrinsic\">extrinsic</a>.",
+            "slug": "intrinsic",
+            "count": "12",
+            "group": "1265"
+        }
+    ]
+}

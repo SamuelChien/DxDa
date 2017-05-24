@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>DataTables example</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+  </head>
+  <body>
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Hack 2017 Tenants</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+        </div>
+	  
+
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <div>
+                <h1 id="tenantName">Enterprise SPOEnabled Tenants</h1>                
+                <h3 id="fStatus">If a Tenant isn't found below, they most likely do not have 250+ SPOEnabled Seats or are not Enterprise.</h3>
+                <h3 id="fStatus2">Please visit http://tenants for more informatiom.</h3>
+                <br /><br />
+            </div>
+
+
+		  <div class="table-responsive">
+          
+            <table id="example" class="display" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+				  <th>TenantId</th>
+				  <th>Tenant Name</th>
+				  <th>Country</th>
+				  <th>FunnelStatus</th>
+				  <th>CloudEnabledUsers</th>
+                  <th>WXPCloudCoauthors</th>
+				</tr>
+              </thead>
+              <tbody>
+              </tbody>
+			</table>
+		  </div>
+
+		  <hr/>
+
+
+
+
+
+
+
+        </div>
+  	  </div>
+	</div>
+	
+
+	<script type="text/javascript" language="javascript">
+        $(document).ready(function() {
+            
+
+
+		$('#example').DataTable( {
+			ajax: {
+			    url: "http://hs-spades-01/table/EnterpriseTenants/?type=datatables",
+				type: 'GET'
+			},
+		    columns: [
+				{ data: "TenantId", 
+				render: function(data, type) {return '<a href="http://hs-spades-01/static/tenant.html?TenantId=' + data + '">"' + data + '"</a>';} },
+				{ data: "OrgName" },
+				{ data: "CountryCode" },
+				{ data: "FunnelStatus" },
+                { data: "CloudEnabledUsers" },
+				{ data: "WXPCloudCoauthors" }
+			]
+		})
+		});
+	
+	</script>
+<script>
+d3.json('http://hs-spades-01/table/UserInfluenceScores/Puid/10033FFF8006C468/', function(data) {
+function(data) {
+  nv.addGraph(function() {
+    var chart = nv.models.discreteBarChart()
+            .x(function(d) { return d.AppName })
+            .y(function(d) { return d.ScoreRank })
+			.margin({top: 30, right: 20, bottom: 50, left: 175})
+			.showValues(true)           //Show bar value next to each bar.
+			.tooltips(true)             //Show tooltips on hover.
+			.transitionDuration(350)
+			.showControls(true);        //Allow user to switch between "Grouped" and "Stacked" mode.
+
+    chart.yAxis
+        .tickFormat(d3.format(',.2f'));
+
+    d3.select('#chart1 svg')
+        .datum(data)
+        .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+});
+</script>
+</body>
+</html>	

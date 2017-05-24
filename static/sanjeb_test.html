@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+        <script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+
+    <script src="http://d3js.org/d3.v3.min.js" language="JavaScript"></script>
+        <script type="text/javascript">
+  
+    
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+    </script>
+  </head>
+  <body>
+    <p><div id="Name" style="display: inline"></div> </b></p>
+    <script type="text/javascript" language="javascript">
+
+        $(document).ready(function() {
+            var alias = getParameterByName("alias");
+            if (alias==null) 
+            {
+                alias="jhoegger"
+            }
+            //alert("here")
+            var url = "".concat("http://hs-spades-01/table/UserAliasTable/Alias/", alias, "/");
+            $.getJSON( url, function( data ) {          
+              // $("#UserId").html(data[0].UserId)
+               $("#Name").html(data[0].Name)
+            })
+        });
+    </script>
+  </body>
+</html>

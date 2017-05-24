@@ -1,0 +1,623 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Tenant Detail</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+
+      <style>
+          h1 {
+              color: dodgerblue;
+              font-family: Calibri;
+              font-weight: bold;
+          }      
+      </style>
+
+  </head>
+  <body>
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Hack 2017 Consumers</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+		    <li>&nbsp;</li>
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+        </div>
+	  
+
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <div>
+                <h1 id="tenantName">Subcription ID</h1>
+                <h5 id="tenantId">Admin PUID</h5>
+                <br />
+                
+                
+                <h2>Subcription Status</h2>
+                <table><tr>
+                    <th>
+                        <h4 id="fStatus">Funnel Status</h4>
+                        <img id="fImage" src="Images\Fstatus\Fstatus1.png" />
+                    </th>
+                     <th align="center">
+                         <canvas id="myCanvas" width="125" height="125"></canvas><br />
+                         PEM Score
+                     </th>
+                    </tr></table>
+                
+                
+                <br /><br />
+            </div>
+            <hr />
+            <h2>Collaboration Funnel</h2>
+
+            <table>
+            <tr>
+                <th>
+                    <div id="chart1">
+                        <svg></svg>
+                    </div>
+
+                </th>
+                <th>
+                    <div id="influence_chart1">
+                        <svg></svg>
+                        <div id="influence_chart1_query"></div>
+                    </div>
+                </th>
+                </tr>
+            </table>
+
+
+            
+            
+
+		  <hr/>
+
+            <h2>Daily Coauthors</h2>
+            <div id="dailycoauthors_chart1">
+                <svg></svg>
+                <div id="influence_chart1_query"></div>
+                
+            </div>
+
+            <hr />
+
+            <h2>Web Apps Commands</h2>
+
+            <div id="avgcommands">
+                <svg></svg>
+                <div id="influence_chart1_query"></div>
+                
+            </div>
+
+            <a id="vNext" href="http://hs-spades-01/static/tenant_vnext.html?TenantId=5fe7edeb-0b8e-4383-a697-ff6218746793">Check out some ideas we are exploring for vNext.</a>
+
+        </div>
+  	  </div>
+	</div>
+	
+      <iframe id="logging" src="" onload="this.width=700;this.height=0;" frameBorder="0"></iframe>
+
+	<script type="text/javascript" language="javascript">
+        //GEt Current user
+        function getCurrentConsoleUser() {
+            var consoleuser = "";
+            $.ajax({
+                type: "GET",
+                url: "/user",
+                success: function (data) {
+                    console.log("data:" + data);
+                    consoleuser = data;
+                },
+                async: false
+            })
+            return consoleuser == null ? "" : consoleuser;
+        }
+
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        $(document).ready(function() {
+      
+            var tenantId = getParameterByName('TenantId');
+
+            var consoleuser = getCurrentConsoleUser();
+            document.getElementById('logging').src = "http://hs-spades-01:419/log2.php?alias=" + tenantId + "&consoleuser=" + consoleuser + "&page_url=" + encodeURIComponent(window.location.href);
+
+           
+
+            //alert('TenantID: ' + tenantId);
+            var url = "".concat("http://hs-spades-01/table/WebTrialRec/AdminPuid/", tenantId, "/");
+
+            $.getJSON( url, function( data ) {			
+                $("#tenantName").html(data[0].CtpSubscriptionId)
+                $("#tenantId").html(data[0].AdminPuid)
+                $("#fStatus").html(data[0].ActionID)
+            })
+
+            $.getJSON(url, function (data) {
+
+                var fstat = data[0].ActionID;
+
+                var img1 = document.getElementById('fImage');
+
+
+                switch (fstat) {
+                    case "UseWord":
+					case "UseExcel":
+					case "UsePowerPoint":
+					case "UseOutlook":
+                        img1.src = "Images\\Fstatus\\Fstatus3.png";
+                        break;
+
+                    case "InstallMobileWord":
+					case "InstallMobileExcel":
+					case "InstallMobilePowerPoint":
+					case "InstallMobileOutlook":
+                        img1.src = "Images\\Fstatus\\Fstatus4.png";
+                        break;
+
+                    case "IdealState":
+                        img1.src = "Images\\Fstatus\\Fstatus8.png";
+                        break;
+
+                    default:
+                        img1.src = "Images\\Fstatus\\Fstatus1.png";
+                        break;
+                }
+
+                var vNext = document.getElementById('vNext');
+                vNext.href = "http://hs-spades-01/static/tenant_vNext.html?TenantId=" + tenantId;
+
+            })
+
+
+		});
+	
+	</script>
+      <script>
+          var tenantId = getParameterByName('TenantId');
+
+          var url = "".concat("http://hs-spades-01/table/TenantFunnelInfo/TenantId/", tenantId, "/?type=nvd3&sort=SortOrder");
+d3.json(url,
+function(data) {
+  nv.addGraph(function() {
+      var chart = nv.models.multiBarHorizontalChart()
+            .x(function (d) { return d.Level })
+            .y(function (d) { return d.NumUsers })
+			.margin({top: 30, right: 20, bottom: 50, left: 150})
+			.showValues(true)
+          .showLegend(false)
+            .showControls(false);
+
+      chart.valueFormat(d3.format('d'))
+
+    chart.xAxis
+        .axisLabel("")
+
+    chart.yAxis
+        .axisLabel("Number of Users")
+        .tickFormat(d3.format(',.2r'));
+
+    d3.select('#chart1 svg')
+		.style({ 'width': 600, 'height': 400 })
+        .datum(data)
+		.transition()
+		.duration(500)
+        .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+});
+      </script>
+	  
+	  <!---
+      <script>
+
+          var tenantId = getParameterByName('TenantId');
+          //var tenantId = "0000747C-4C5D-4752-B511-C01330F6D62D";
+
+          //alert('TenantID: ' + tenantId);
+          var url = "".concat("http://hs-spades-01/table/TenantsFunnelRaw/TenantId/", tenantId, "/");
+
+          $.getJSON(url, function (data) {
+
+              var progressValue = 100 * data[0].WXPCloudCoauthors / data[0].CloudEnabledUsers;
+              var canvas = document.getElementById('myCanvas');
+              var context = canvas.getContext('2d');
+              var al = 0;
+              var start = 4.72;
+              var cw = context.canvas.width / 2;
+              var ch = context.canvas.height / 2;
+              var diff;
+
+              function progressBar() {
+                  diff = (al / 100) * Math.PI * 2;
+                  context.clearRect(0, 0, 400, 200);
+                  context.beginPath();
+                  context.arc(cw, ch, 50, 0, 2 * Math.PI, false);
+                  context.fillStyle = '#FFF';
+                  context.fill();
+                  context.strokeStyle = '#e7f2ba';
+                  context.stroke();
+                  context.fillStyle = '#000';
+                  context.strokeStyle = '#b3cf3c';
+                  context.textAlign = 'center';
+                  context.lineWidth = 15;
+                  context.font = '10pt Verdana';
+                  context.beginPath();
+                  context.arc(cw, ch, 50, start, diff + start, false);
+                  context.stroke();
+                  context.fillText(al + '%', cw + 2, ch + 6);
+                  if (al >= progressValue) {
+                      clearTimeout(bar);
+                  }
+
+                  al++;
+              }
+
+              var bar = setInterval(progressBar, 25);
+
+          });
+      </script>
+
+      <script>
+    // User Network Charting
+
+          var tenantId = getParameterByName('TenantId');
+
+    var getJsonData = function (url) {
+        var json = null;
+
+        $.ajax({
+            'async': false,
+            'global': false,
+            'url': url,
+            'type': 'GET',
+            'dataType': "text",
+            'success': function (data) { json = data; }
+        });
+        return $.parseJSON(json);
+    };
+
+
+    var dataForChart = function (tenantId) {
+
+        var base_url = 'http://hs-spades-01/table/';
+        var app = 'WXP'
+        var url = '';
+        var sql = '';
+
+        var series1 = new Array();
+        series1.key = "CloudEnabledUsers";
+        sql = 'SELECT Date, CloudEnabledUsers AS Y FROM TenantHistory WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series1.values = getJsonData(url);
+        series1.color = "#1F77B4";
+
+        var series2 = new Array();
+        series2.key = "CloudActiveUsers";
+        sql = 'SELECT Date, CloudActiveUsers AS Y FROM TenantHistory WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series2.values = getJsonData(url);
+        series2.color = "#2CA02C";
+
+        var series3 = new Array();
+        series3.key = "WXPCloudUsers";
+        sql = 'SELECT Date, WXPCloudUsers AS Y FROM TenantHistory WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series3.values = getJsonData(url)
+        series3.color = "#807dab";
+
+        var series4 = new Array();
+        series4.key = "WXPCloudCollaborators";
+        sql = 'SELECT Date, WXPCloudCollaborators AS Y FROM TenantHistory WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series4.values = getJsonData(url);
+        series4.color = "#ce5556";
+
+        var series5 = new Array();
+        series5.key = "WXPCloudContributors";
+        sql = 'SELECT Date, WXPCloudContributors AS Y FROM TenantHistory WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series5.values = getJsonData(url);
+        series5.color = "#837f79";
+
+        var series6 = new Array();
+        series6.key = "WXPCloudCoauthors";
+        sql = 'SELECT Date, WXPCloudCoauthors AS Y FROM TenantHistory WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series6.values = getJsonData(url)
+        series6.color = "#ed9e60";
+
+        var dataArray = new Array();
+        dataArray.push(series1);
+        dataArray.push(series2);
+        dataArray.push(series3);
+        dataArray.push(series4);
+        dataArray.push(series5);
+        dataArray.push(series6);
+
+        
+        return dataArray;
+    };
+
+    // Main Network Chart
+
+        var width = 800, height = 400;
+
+        nv.addGraph(function ()
+        {
+            var chart = nv.models.lineChart()
+
+                .x(function (d) { return new Date(d.Date).getTime() })
+                .y(function (d) { return d.Y })
+                .margin({ top: 30, right: 20, bottom: 80, left: 70 })
+                .forceY([0, 100])
+                .width(width)
+                .height(height)
+                .useInteractiveGuideline(true)
+                .noData("There is no data to display.")
+            ;
+
+            chart.xAxis
+                .axisLabel('Date')
+                .rotateLabels(-45)
+                //.showMaxMin(false)
+                .tickFormat(function (d) { return d3.time.format('%x')(new Date(d)) })
+
+            ;
+
+            chart.xScale(d3.time.scale());
+
+
+            chart.yAxis
+                //.axisLabel('');
+                .tickFormat(d3.format('d'));
+
+            d3.select('#influence_chart1 svg')
+                .datum(dataForChart(tenantId))
+                .transition().duration(500)
+                .call(chart)
+                
+            .style({ 'width': 800, 'height': 400 })
+            ;
+
+            nv.utils.windowResize(chart.update);
+
+            return chart;
+        });
+
+    // end of network charts
+      </script>  
+      <script>
+    // User Network Charting
+
+          var tenantId = getParameterByName('TenantId');
+
+    var getJsonData = function (url) {
+        var json = null;
+
+        $.ajax({
+            'async': false,
+            'global': false,
+            'url': url,
+            'type': 'GET',
+            'dataType': "text",
+            'success': function (data) { json = data; }
+        });
+        return $.parseJSON(json);
+    };
+
+
+    var dataForDailyCoAuthorChart = function (tenantId) {
+
+        var base_url = 'http://hs-spades-01/table/';
+        var app = 'WXP'
+        var url = '';
+        var sql = '';
+
+        var series1 = new Array();
+        series1.key = "WXPCoauthors";
+        sql = 'SELECT Date, WXPCoauthors AS Y FROM TenantDailyCoAuthors WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series1.values = getJsonData(url);
+        series1.color = "#575e71";
+
+        var series2 = new Array();
+        series2.key = "WordCoauthors";
+        sql = 'SELECT Date, WordCoauthors AS Y FROM TenantDailyCoAuthors WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series2.values = getJsonData(url);
+        series2.color = "#2b579a";
+
+        var series3 = new Array();
+        series3.key = "ExcelCoauthors";
+        sql = 'SELECT Date, ExcelCoauthors AS Y FROM TenantDailyCoAuthors WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series3.values = getJsonData(url)
+        series3.color = "#217346";
+
+        var series4 = new Array();
+        series4.key = "PowerPointCoauthors";
+        sql = 'SELECT Date, PowerPointCoauthors AS Y FROM TenantDailyCoAuthors WHERE TenantId=\'' + tenantId + '\' Order by Date FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        series4.values = getJsonData(url);
+        series4.color = "#d24726";
+
+
+        var dataArray = new Array();
+        dataArray.push(series1);
+        dataArray.push(series2);
+        dataArray.push(series3);
+        dataArray.push(series4);
+
+        //alert("gotData2");
+        return dataArray;
+    };
+
+    // Main Network Chart
+
+        var width = 800, height = 400;
+
+        nv.addGraph(function ()
+        {
+            var chart = nv.models.lineChart()
+
+                .x(function (d) { return new Date(d.Date).getTime() })
+                .y(function (d) { return d.Y })
+                .margin({ top: 30, right: 20, bottom: 50, left: 100 })
+                .forceY([0, 10])
+                //.width(width)
+                .height(height)
+                .useInteractiveGuideline(true)
+                .noData("There is no data to display.")
+            ;
+
+            chart.xAxis
+                .axisLabel('Date')
+                .rotateLabels(-45)
+                //.showMaxMin(false)
+                .tickFormat(function (d) { return d3.time.format('%x')(new Date(d)) })
+
+            ;
+
+            chart.xScale(d3.time.scale());
+
+
+            chart.yAxis
+                //.axisLabel('');
+                .tickFormat(d3.format('d'));
+
+            d3.select('#dailycoauthors_chart1 svg')
+                .datum(dataForDailyCoAuthorChart(tenantId))
+                .transition().duration(500)
+                .call(chart)
+                .style({ 'height': height+50 })
+            ;
+
+            nv.utils.windowResize(chart.update);
+
+            return chart;
+        });
+
+    // end of network charts
+      </script>  
+      <script>
+          var tenantId = getParameterByName('TenantId');
+
+    nv.addGraph(function() {
+      var chart = nv.models.boxPlotChart()
+          .x(function(d) { return d.label })
+          //.staggerLabels(true)
+          .maxBoxWidth(75) // prevent boxes from being incredibly wide
+        //.yDomain([0, 500])
+      .color(['#2b579a', '#217346', '#d24726'])
+
+
+          ;
+      d3.select('#avgcommands svg')
+          .datum(exampleData(tenantId))
+          .style({ 'width': 400, 'height': 400 })
+          .call(chart);
+      nv.utils.windowResize(chart.update);
+      return chart;
+    });
+    function exampleData(tenantId) {
+
+        var base_url = 'http://hs-spades-01/table/';
+        var app = 'WXP'
+        var url = '';
+        var sql = '';
+
+        var series1 = new Array();
+        series1.label = "Web Word";
+        sql = 'SELECT Percentile25 AS Q1, Percentile50 AS Q2, Percentile75 AS Q3, MinActionCount AS whisker_low, MaxActionCount AS whisker_high FROM TenantDistinctUserActions WHERE OMSTenantId=\'' + tenantId + '\' AND Application=\'' + series1.label + '\' FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        //series1.values = getJsonData(url);
+        // series1.color = "#1F77B4";
+        temp = getJsonData(url);
+        series1.values = temp[0];
+
+        var series2 = new Array();
+        series2.label = "Web Excel";
+        sql = 'SELECT Percentile25 AS Q1, Percentile50 AS Q2, Percentile75 AS Q3, MinActionCount AS whisker_low, MaxActionCount AS whisker_high FROM TenantDistinctUserActions WHERE OMSTenantId=\'' + tenantId + '\' AND Application=\'' + series2.label + '\' FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        temp = getJsonData(url);
+        series2.values = temp[0];
+      //  series2.color = "#1F77B4";
+
+        var series3 = new Array();
+        series3.label = "Web PowerPoint";
+        sql = 'SELECT Percentile25 AS Q1, Percentile50 AS Q2, Percentile75 AS Q3, MinActionCount AS whisker_low, MaxActionCount AS whisker_high FROM TenantDistinctUserActions WHERE OMSTenantId=\'' + tenantId + '\' AND Application=\'' + 'FooBarP' + '\' FOR JSON PATH';
+        url = encodeURI(base_url + sql);
+        //series3.values = getJsonData(url);
+        // series3.color = "#1F77B4";
+        temp = getJsonData(url);
+        series3.values = temp[0];
+
+        var dataArray = new Array();
+        dataArray.push(series1);
+        dataArray.push(series2);
+        dataArray.push(series3);
+
+
+       // alert("gotBData");
+        //alert(series3.values["Q1"]);
+
+        //var jsonString = JSON.stringify(series1.values);
+        return dataArray;
+
+    }
+      </script>
+	 -->
+</body>
+</html>	

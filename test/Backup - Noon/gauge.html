@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+        <script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+
+    <script src="http://d3js.org/d3.v3.min.js" language="JavaScript"></script>
+    <script src="liquidfillgauge.js" language="JavaScript"></script>
+    <style>
+        .liquidFillGaugeText { font-family: Helvetica; font-weight: bold; font-size: 10 }
+    </style>
+    <script type="text/javascript">
+  
+    
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+    </script>
+</head>
+<body>
+<table>
+<tr>
+    <td align=center>
+        <svg id="fillgauge1" width =100% height="100"></svg>
+    </td>
+    <td align=center>
+        <svg id="fillgauge2" width =100% height="100"></svg>
+    </td>
+    <td align=center>
+        <svg id="fillgauge3" width =100% height="100"></svg>
+    </td>
+</tr>
+<td align="center">
+   <b> <div id="Word" style="display: inline"></div> in Word</b>
+</td>
+<td align="center">
+  <b>  <div id="Excel" style="display: inline"></div> in Excel </b>
+</td>
+<td align="center">
+    <b><div id="PowerPoint" style="display: inline"></div> in PowerPoint</b>
+</td>
+
+<tr>
+</tr>
+
+</table>
+
+
+<script type="text/javascript" language="javascript">
+
+        $(document).ready(function() {
+            var alias = getParameterByName("alias");
+            if (alias==null) 
+            {
+                alias="jhoegger"
+            }
+            //alert("here")
+            var url = "".concat("http://hs-spades-01/table/UserProficiencyScores/Alias/", alias, "/");
+            $.getJSON( url, function( data ) {          
+              // $("#UserId").html(data[0].UserId)
+               $("#Alias").html(data[0].Alias)
+               $("#Word").html(data[0].WordBadge)
+               $("#Excel").html(data[0].ExcelBadge)
+               $("#PowerPoint").html(data[0].PowerPointBadge)
+              // $("#WordRank").html((parseFloat(data[0].WordRank)*100).toFixed(0))
+              // $("#ExcelRank").html((parseFloat(data[0].ExcelRank)*100).toFixed(0))
+              // $("#PowerPointRank").html((parseFloat(data[0].PowerPointRank)*100).toFixed(0))
+              
+                word_badge = data[0].WordBadge;
+                excel_badge = data[0].ExcelBadge;
+                ppt_badge = data[0].PowerPointBadge;
+                word_rank = parseFloat((data[0].WordRank)*100).toFixed(0);
+                excel_rank = parseFloat((data[0].ExcelRank)*100).toFixed(0);
+                ppt_rank = parseFloat((data[0].PowerPointRank)*100).toFixed(0);
+
+               
+
+var config1 = liquidFillGaugeDefaultSettings();
+    config1.circleColor = "#2b579a";
+    config1.textColor = "#2b579a";
+    config1.waveTextColor = "#FFFFFF";
+    config1.waveColor = "#2b579a";
+    config1.circleThickness = 0.2;
+    config1.textVertPosition = 0.5;
+    config1.waveAnimateTime = 2000;
+    
+    var gauge1 = loadLiquidFillGauge("fillgauge1", word_rank, config1);
+
+    
+    var config2 = liquidFillGaugeDefaultSettings();
+    config2.circleColor = "#217346";
+    config2.textColor = "#217346";
+    config2.waveTextColor = "#FFFFFF";
+    config2.waveColor = "#217346";
+    config2.circleThickness = 0.2;
+    config2.textVertPosition = 0.5;
+    config2.waveAnimateTime = 2000;
+    var gauge2 = loadLiquidFillGauge("fillgauge2", excel_rank, config2);
+
+    
+    var config3 = liquidFillGaugeDefaultSettings();
+    config3.circleColor = "#d24726";
+    config3.textColor = "#d24726";
+    config3.waveTextColor = "#FFFFFF";
+    config3.waveColor = "#d24726";
+    config3.circleThickness = 0.2;
+    config3.textVertPosition = 0.5;
+    config3.waveAnimateTime = 2000;
+   var gauge3 = loadLiquidFillGauge("fillgauge3", ppt_rank, config3);
+
+        });
+
+             }); 
+    
+    </script>
+
+</body>
+</html>

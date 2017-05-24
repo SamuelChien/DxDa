@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>User Profile</title>
+	<link rel="shortcut icon" href="/image/favicon.ico">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">	
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.css">	
+	<link rel="stylesheet" type="text/css" href="//getbootstrap.com/examples/dashboard/dashboard.css">	
+	
+	<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.5/nv.d3.js"></script>
+	<style>
+	.navbar-brand {
+    position: absolute;
+    left: 50%;
+    margin-left: -50px !important;
+	text-align: center;
+	display:block;
+    margin: auto;
+	}
+	
+	.link {
+	  fill: none;
+	  stroke: #666;
+	  stroke-width: 1.5px;
+	}
+
+	.link.excel {
+	  stroke: #217346;
+	}
+
+	.link.word {
+		stroke: #2b579a;
+	}
+
+	.link.powerpoint {
+		stroke: #d24726;
+	}
+
+	circle {
+	  fill: #ccc;
+	  stroke: #333;
+	  stroke-width: 1.5px;
+	}
+
+	text {
+	  font: 14px sans-serif;
+	  pointer-events: none;
+	  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+	}
+	
+	#appAward {
+	display: inline-block;
+	height: 100px;
+	width: 100px;
+	}
+	#dogfood {
+	display: none;
+	height: 100px;
+	width: 100px;
+	}
+	#dogfoodbw {
+	display: inline-block;
+	height: 100px;
+	width: 100px;
+	}			
+	#multiplat {
+	display: none;
+	height: 100px;
+	width: 120px;
+	}
+	#multiplatbw {
+	display: inline-block;
+	height: 100px;
+	width: 120px;
+	}
+
+	</style>
+	<script type="text/javascript">
+			window.OfficeBrowserFeedback = window.OfficeBrowserFeedback || {};
+
+			window.OfficeBrowserFeedback.initOptions = {
+				appId: 999, // Replace by your own app id
+				stylesUrl: "/static/feedback/styles/OfficeBrowserFeedback.css",
+				intlUrl: "/static/feedback/intl/",
+				environment: 1, //0 - Prod, 1 - Int
+				primaryColour: "#008272",
+				secondaryColour: "#004B50"
+			};
+	(function (d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) { return; }
+    js = d.createElement(s); js.id = id;
+    js.src = "/static/feedback/scripts/OfficeBrowserFeedback.js";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'officebrowserfeedback-jssdk'));
+
+</script>
+  </head>
+  <body>
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+		  <a href="https://microsoft.sharepoint.com/teams/ODI/" title="Office Data Science">
+		    <img src="http://hs-spades-01/image/ods-logo.png" style="height:50px" class="img-responsive" alt="user">
+		  </a>
+         </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Settings</a></li>
+            <li><a href="/about">About</a></li>
+			<li><img src="/static/feedback/smile.jpg" style="height:30px; margin-top: 10px" onclick="OfficeBrowserFeedback.multiFeedback().then(
+			function () { console.log('suceeded'); },
+			function (err) { console.log('failed with error: ' + err); });">:)</a></li>
+          </ul>
+          <form class="navbar-form navbar-right" action="/user/" method="GET">
+            <input type="text" name="alias" class="form-control" placeholder="Search alias...">
+          </form>
+		  <a class="navbar-brand" href="#">April 2017 Hackathon</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+		  <center><img src="https://docs.moodle.org/27/en/images_en/7/7c/F1.png" class="img-responsive" alt="user" id="profilePic"></center><br>
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#overview">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#expertise">Expertise Level</a></li>
+			<li><a href="#network">My Network</a></li>
+			<!-- <ul>
+			<li><a href="#networkmap">Network Map</a></li>
+			<li><a href="#chart">Expertise chart</a></li>
+			</ul> -->
+            <li></li>
+
+			<li><a href="#usagemapanchor">My Usage</a></li>
+            <li><a href="#">More Stuff</a></li>
+          </ul>
+		  
+        </div>
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  	      <!-- <h2 id="overview">Overview</h2>
+		  <hr/> -->
+		  <br><br><br><br>
+		  <table width="100%">
+		  <tr>
+		  <td align="left">
+		  <table>
+		  <tr>
+		  <p><h2 id="overview"><div id="Name" style="display: inline"></div> </b></p></h2>
+			<p><h4> Puid: <div id="Puid" style="display: inline"></div> </b></p></h4>
+			
+			<script type="text/javascript" language="javascript">
+
+				$(document).ready(function() {
+					var alias = getCurrentSearchAlias();
+					if (alias==null) 
+					{
+						alias="jhoegger"
+					}
+					//alert("here")
+					var url = "".concat("http://hs-spades-01/table/UserAliasTable/Alias/", alias, "/");
+					$.getJSON( url, function( data ) {          
+					  // $("#UserId").html(data[0].UserId)
+					   $("#Name").html(data[0].Name)
+					   $("#Puid").html(data[0].Id)
+					})
+				});
+			</script>
+		  </tr>
+		  <tr>
+		  <div id="overviewDiv"></div>
+			<img src="/image/NoAppAward.png" class="img-responsive" id="appAward">
+			<img id="dogfood" src="/image/dogfood.jpg"/>
+			<img id="dogfoodbw" src="/image/dogfood-bw.jpg"/>
+			<img id="multiplat" src="/image/multiplatform.png"/>
+			<img id="multiplatbw" src="/image/multiplatform-bw.png"/>
+		  </tr>
+		  </table>
+		  <br>
+		  
+		  </td>
+		  <td style="border:2px solid black;" height="50%">
+		  
+			&nbsp;Page Views <div id="PageViews" style="display: inline"></div><br/>
+			&nbsp;Unique Visitors <div id="UniqueVis" style="display: inline"></div><br/>
+			</td>
+			</tr>
+			</table>
+			<hr/>
+  	      <h2 id="expertise"><br><br>Expertise Level</h2>
+		  <iframe id="speedometer" src="http://hs-spades-01/static/gauge.html?alias=sanjeb" onload="this.width=700;this.height=210;" frameBorder="0"></iframe><br/>
+
+		  
+		  			<hr/>
+  	      <h2 id="network"><br><br>My Network</h2>
+			<iframe id="networkmaps" src="http://hs-spades-01/static/james-ted2.html" style="height:1900px; width: 100%; border: none" frameBorder="0"></iframe>
+		  </td>
+		  </table>
+		  
+			<hr/>
+  	      <h2 id="usagemapanchor"><br><br>Office App Usage</h2>
+		  <div class="col-sm-9 col-sm-offset-1 col-md-10 col-md-offset-2 main">
+			Most used App is <div id="App" style="display: inline"></div><br/>
+			&nbsp;&nbsp;-> used for <div id="Weeks" style="display: inline"></div> days in the past 12 weeks<br/>
+			<hr/>     
+        </div>
+		    <select id="appname" style="dropdownmenu" onchange="refreshusagemap()">
+			<option value="">Select Another App</option>
+			<option value="Word">Word</option>
+			<option value="Excel">Excel</option>
+			<option value="PowerPoint">PowerPoint</option>
+			<option value="Office">Office</option>
+			<option value="Publisher">Publisher</option>
+			<option value="Outlook">Outlook</option>
+			<option value="OneNote">OneNote</option>
+			<option value="Access">Access</option>
+    </select>
+    <br/>
+
+      <iframe id="usagemap" src="http://hs-spades-01:419/usagemap.php" onload="this.width=700;this.height=210;" frameBorder="0"></iframe>
+      <iframe id="logging" src="" onload="this.width=700;this.height=0;" frameBorder="0"></iframe>
+
+      
+		  <br/>
+  	      <h2 id="glumps"><br><br>Feature Usage</h2>
+		  <br/>
+  	  <select id="appname2" style="dropdownmenu" onchange="refreshusagemap()">
+          <option value="">Select Another App</option>
+          <option value="Word">Word</option>
+          <option value="Excel">Excel</option>
+          <option value="PowerPoint">PowerPoint</option>
+    </select>
+    <br/>
+    <iframe id="glumpmap" src="http://hs-spades-01:419/glumpmap.php" onload="this.width=700;this.height=600;" frameBorder="0"></iframe>
+  	      
+
+        </div>
+  	  </div>
+	</div>
+	<hr/>
+  	      <h2 id="chart">Influencer Score</h2>
+		  <div id="chart1" style="display: none;">
+			<svg></svg>
+		  </div>
+	
+	<script type="text/javascript" language="javascript">
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function getCurrentConsoleUser() {
+    var consoleuser = "";
+	  $.ajax({
+	  type:"GET",
+	  url:"/user",
+	  success: function(data) {
+	  console.log("data:" + data);
+	  consoleuser = data;
+	  },
+	  async: false
+	  })	
+    return consoleuser == null ? "" : consoleuser;
+}
+
+function getCurrentSearchAlias() {
+    var consoleuser = getCurrentConsoleUser();
+	var alias = getParameterByName('alias');
+	if (alias.length<1) {
+		alias=consoleuser;
+	}
+	if (alias.length<1) alias="jhoegger";
+    return alias;
+}
+ 
+$(document).ready(function() {
+	var consoleuser = getCurrentConsoleUser();
+	var alias = getCurrentSearchAlias();
+	
+	document.getElementById('logging').src = "http://hs-spades-01:419/log2.php?alias=" + alias+"&consoleuser=" + consoleuser+"&page_url="+encodeURIComponent(window.location.href);
+
+	var img2=document.getElementById('appAward');
+	
+	var WhichAppAward = 'Word'; //this variable maps the app award to default app for usagemap
+	var Name = "";
+	var Puid = "";
+	var url = "".concat("http://hs-spades-01/table/UserAliasTable/Alias/", alias, "/");
+            $.getJSON( url, function( data ) {          
+              // $("#UserId").html(data[0].UserId)
+               Name = data[0].Name;
+               Puid = data[0].Id;
+            });
+	
+	//$('#overview').html("Overview for " + Name);
+	url = "http://hs-spades-01/table/UserProficiencyScores/Alias/" + alias;
+	$.getJSON(url, function(data) {
+		d = data[0];
+		s = "Congratulations " //+ d.Alias 
+		if (d.Word > 7){
+		s += "! You are level " + d.Word + " in Word";
+		img2.src='/image/word-award1.png';
+		//img2.style.display = 'inline-block';
+		}
+		else if (d.Excel > 7){
+		s += "! You are level " + d.Excel + " in Excel";
+		img2.src='/image/excel-award1.png';
+		//img2.style.display = 'inline-block';
+		var WhichAppAward = 'Excel';
+		}
+		else if (d.PowerPoint > 7){
+		s += "! You are level " + d.PowerPoint + " in PowerPoint";
+		img2.src='/image/powerpoint-award1.png';
+		//img2.style.display = 'inline-block';
+		}
+		else {
+		s += "! You are level " + d.PowerPoint + " in PowerPoint";
+		img2.src='/image/NoAppAward.png';
+		//img2.style.display = 'none';
+
+		var WhichAppAward = 'PowerPoint';
+		}
+			
+		$('#overviewDiv').html(s)
+	})
+	
+	var url1ma = "".concat("http://hs-spades-01/table/PuidLevelFeatures/Alias/", alias, "/");
+	var url2ma = "".concat("http://hs-spades-01/table/SELECT%20TOP%201%20*%20FROM%20TotalAppUsage%20WHERE%20Alias='", alias, "'%20ORDER%20BY%20DaysUsed%20DESC%20FOR%20JSON%20PATH;");
+
+	//badges for dogfood & multiplatform
+	$.getJSON( url1ma, function( data ) {
+		$("#Alias").html(data[0].Alias)			
+		$("#UserId").html(data[0].Puid)
+		//$("#App").html(data[0].MaxUseApp)
+		//$("#Weeks").html(data[0].WeeksUsed)
+		var DogfoodImage = document.getElementById("dogfood");
+		var DogfoodImagebw = document.getElementById("dogfoodbw");
+		if ((data[0].AnyDogfood) == 1) {
+		DogfoodImage.style.display = 'inline-block';
+		DogfoodImagebw.style.display = 'none';
+		}
+		var MultiplatImage = document.getElementById("multiplat");
+		var MultiplatImagebw = document.getElementById("multiplatbw");
+		if ((data[0].NumOS) > 1) {
+		MultiplatImage.style.display = 'inline-block';
+		MultiplatImagebw.style.display = 'none';
+		}
+	});
+
+	//most used app
+	$.getJSON( url2ma, function( data ) {
+	  $("#App").html(data[0].AppName)
+	  $("#Weeks").html(data[0].DaysUsed)
+	  MostUsedApp = data[0].AppName;
+	  document.getElementById('usagemap').src = "http://hs-spades-01:419/usagemap.php?alias="+alias+"&appname="+MostUsedApp;
+	});	
+	
+	// Page Views stats
+	var urlPageViews = "http://hs-spades-01/table/SELECT%20COUNT(*)%20AS%20PageViews,COUNT(DISTINCT%20consoleuser)%20AS%20UniqueVisitors%20FROM%20LogTable3%20WHERE%20page_url%20LIKE%20('%25table%25')%20AND%20alias='"+alias+"'%20AND%20alias!=consoleuser%20FOR%20JSON%20PATH;";
+			$.getJSON( urlPageViews, function( data ) {
+			  $("#PageViews").html(data[0].PageViews)
+			  $("#UniqueVis").html(data[0].UniqueVisitors)
+			});	
+	
+	//document.getElementById('usagemap').src = "http://hs-spades-01:419/usagemap.php?alias="+alias+"&appname"+WhichAppAward;
+	document.getElementById('glumpmap').src = "http://hs-spades-01:419/glumpmap.php?alias="+alias+"&appname="+WhichAppAward;
+	document.getElementById('speedometer').src = "http://hs-spades-01/static/gauge.html?alias="+alias;
+	document.getElementById('networkmaps').src = "http://hs-spades-01/static/james.html?alias="+alias;
+	
+	var img1=document.getElementById('profilePic');
+	img1.src='http://who/Photos/' + alias + '.jpg';
+	
+	$('#Table1').DataTable( {
+			ajax: {
+				url: "http://hs-spades-01/table/UserProficiencyScores/Alias/" + alias + "/?type=datatables",
+				type: 'GET'
+			},
+		    columns: [
+				{ data: "Alias" },
+				{ data: "UserId" },
+				//{ data: "Word" },
+				//{ data: "Excel" },
+				//{ data: "PowerPoint" }
+			],
+			searching: false,
+			ordering:  false,
+			paging: false
+		})
+		
+
+		
+		
+		
+		
+		});
+	function refreshusagemap(){
+		var alias = getCurrentSearchAlias();
+		document.getElementById('usagemap').src = "http://hs-spades-01:419/usagemap.php?alias="+alias+"&appname="+document.getElementById("appname").value;
+		document.getElementById('glumpmap').src = "http://hs-spades-01:419/glumpmap.php?alias="+alias+"&appname="+document.getElementById("appname2").value;
+	}
+
+</script>
+
+	</script>
+<script>
+
+var url = "http://hs-spades-01/table/UserInfluenceScores/Puid/10033FFF8006C468/?type=nvd3"
+d3.json(url, 
+function(data) {
+  nv.addGraph(function() {
+    var chart = nv.models.discreteBarChart()
+            .x(function(d) { return d.AppName })
+            .y(function(d) { return d.ScoreRank })
+			.margin({top: 30, right: 20, bottom: 50, left: 100})
+			.showValues(true);
+
+    chart.xAxis
+        .axisLabel("My App")
+
+    chart.yAxis
+        .axisLabel("Score rank (#)")
+        .tickFormat(d3.format(',.0f'));
+
+    d3.select('#chart1 svg')
+		.attr("height", 400)
+        .datum(data)
+		.transition()
+		.duration(500)
+        .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+});
+</script>
+</body>
+</html>	
